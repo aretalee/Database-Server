@@ -13,16 +13,30 @@ public class Database {
 
     private List<Table> thisDatabase;
     private File databaseFile;
+    private String databaseName;
 
     public Database(File newDatabaseFile) {
         // determine how to create instance of this class
 
         thisDatabase = new ArrayList<Table>();
         databaseFile = newDatabaseFile;
+        databaseName = databaseFile.getName();
+    }
+
+    public static void main(String args[]) throws IOException {
+        String folderPath = Paths.get("databases").toAbsolutePath().toString() + File.separator + "newdata";
+        File file = new File(folderPath);
+        Database db = new Database(file);
+        db.getDatabaseName();
+
     }
 
     public List<Table> accessDatabase() {
         return thisDatabase;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
     }
 
 //    // see if I can extrapolate this later (along with createDatabase)

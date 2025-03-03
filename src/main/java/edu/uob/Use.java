@@ -2,10 +2,28 @@ package edu.uob;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Use {
 
-    public File switchDatabases(File databases, String databaseName) throws IOException {
+    public static void main(String args[]) throws IOException {
+        String folderPath = Paths.get("databases").toAbsolutePath().toString();
+
+        File currentDB = new File(folderPath + File.separator + "datatwo");
+        System.out.println(currentDB.getName());
+
+        Use use = new Use();
+        Database switchedDB = use.switchDatabases(new File(folderPath), "dataone");
+        System.out.println(switchedDB.getDatabaseName());
+
+        switchedDB = use.switchDatabases(new File(folderPath), "datatwo");
+        System.out.println(switchedDB.getDatabaseName());
+
+    }
+
+    public Database switchDatabases(File databases, String databaseName) throws IOException {
         // same as USE
 
         // need to check if this works
@@ -25,7 +43,7 @@ public class Use {
             }
         }
 
-        return requestedDatabase;
+        return new Database(requestedDatabase);
         // can then be saved as currentDatabase in class that called this
     }
 }

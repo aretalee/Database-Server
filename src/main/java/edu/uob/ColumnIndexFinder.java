@@ -15,7 +15,7 @@ public class ColumnIndexFinder {
 
         List<String> headerList = chosenTable.accessColumnHeaders();
         for(String header : headerList) {
-            if((header).equalsIgnoreCase(chosenHeader)) {
+            if((header.toLowerCase()).equalsIgnoreCase(chosenHeader.toLowerCase())) {
                 chosenIndex = headerList.indexOf(header);
             }
         }

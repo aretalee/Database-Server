@@ -10,11 +10,33 @@ import java.util.List;
 
 public class Alter {
 
+    public static void main(String args[]) throws IOException {
+
+        String folderPath = Paths.get("databases").toAbsolutePath().toString() + File.separator + "datatwo";
+
+        List<String> attributeList = new ArrayList<String>();
+        attributeList.add("name");
+        attributeList.add("description");
+        attributeList.add("type");
+
+        Create create = new Create();
+        Table newTable = create.createTable(folderPath, "NewTableFive", attributeList);
+
+        Alter alter = new Alter();
+        alter.alterTable("drop", newTable, "NAME");
+
+        List<String> list = newTable.accessColumnHeaders();
+        for (String header : list) {
+            System.out.println(header);
+        }
+
+    }
+
     public void alterTable(String valueType, Table chosenTable, String chosenHeader) throws IOException {
 
         // best to separate out into smaller functions
 
-        if(valueType.equals("ADD")) {
+        if(valueType.equalsIgnoreCase("add")) {
 
             chosenTable.accessColumnHeaders().add(chosenHeader);
 
@@ -25,11 +47,11 @@ public class Alter {
 
         }
 
-        if(valueType.equals("DROP")) {
+        if(valueType.equalsIgnoreCase("drop")) {
             int chosenIndex = ColumnIndexFinder.findColumnIndex(chosenTable, chosenHeader);
             chosenTable.accessColumnHeaders().remove(chosenIndex);
 
-            if(chosenIndex != -1) {
+            if(chosenIndex != -1 && !chosenHeader.equalsIgnoreCase("id")) { // should change checking ID into error handling?
                 for(List<String> row : chosenTable.accessTable()) {
                     row.remove(chosenIndex);
                 }

@@ -1,8 +1,6 @@
 package edu.uob;
 
 import java.io.*;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,6 +59,13 @@ public class FileHandler {
             FileWriter fileWriter = new FileWriter(chosenFile);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
             // for buffered reader --> read all lines by checking if line is null
+
+            List<String> columnHeaders = currentTable.accessColumnHeaders();
+            for (String header : columnHeaders) {
+                bufferedWriter.write(header);
+                bufferedWriter.write("\t");
+            }
+            bufferedWriter.newLine();
 
             List<List<String>> tableContent = currentTable.accessTable();
             for (List<String> row : tableContent) {

@@ -8,6 +8,14 @@ import java.nio.file.Files;
 
 public class Drop {
 
+    public static void main(String args[]) throws IOException {
+        Drop drop = new Drop();
+
+        String folderPath = Paths.get("databases").toAbsolutePath().toString() + File.separator + "dataone" + File.separator + "newtablefour.tab";
+        drop.dropFile(new File(folderPath));
+
+    }
+
     public void dropFile(File file) throws IOException {
 //  public void dropFile(String directoryPath, File file) throws IOException {
 
@@ -34,12 +42,15 @@ public class Drop {
 
         if (fileList == null) {
             throw new NullPointerException("allDatabases");
-        } else if (fileList.length == 0) {
-            throw new IOException("databases is empty");
         }
+//        else if (fileList.length == 0) {
+//            throw new IOException("databases is already empty");
+//        }
 
-        for (File f : fileList) {
-            dropFile(f);
+        if (fileList.length > 0) {
+            for (File f : fileList) {
+                dropFile(f);
+            }
         }
         return emptyDirectory;
     }

@@ -20,7 +20,7 @@ public class QueryLexer{
 
     public static void main(String args[]) {
 
-        String newQuery = "  INSERT  INTO  people   VALUES(  'Simon Lock'  ,35, 'simon@bristol.ac.uk' , 1.8  ) ; ";
+        String newQuery = "CREATE TABLE marks (Name, Mark, Pass); ";
         QueryLexer lexer = new QueryLexer(newQuery);
         lexer.setup();;
         for (String token : lexer.tokens) {
@@ -44,7 +44,7 @@ public class QueryLexer{
                 // If it's not a string literal, it must be query text (which needs further processing)
             else {
                 // Tokenise the fragment into an array of strings - this is the "clever" bit !
-                String[] nextBatchOfTokens = tokenise(fragments[i].toLowerCase());
+                String[] nextBatchOfTokens = tokenise(fragments[i]); //.toLowerCase());
                 // Then copy all the tokens into the "result" list (needs a bit of conversion)
                 tokens.addAll(Arrays.asList(nextBatchOfTokens));
             }
