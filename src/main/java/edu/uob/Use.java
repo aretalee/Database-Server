@@ -44,6 +44,7 @@ public class Use {
         }
 
         return new Database(requestedDatabase);
+        // should Database instance be created here or in CREATE
         // can then be saved as currentDatabase in class that called this
     }
 }

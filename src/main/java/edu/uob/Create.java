@@ -51,7 +51,6 @@ public class Create {
             throw new IOException("Could not create directory " + filePath);
         }
 
-        //        return this.newFile;
         return newFile;
     }
 
@@ -70,15 +69,13 @@ public class Create {
         if (newFile.exists()) {
             throw new IOException("Table already exists " + filePath);
         }
-        newFile.createNewFile();
-//        else if (!newFile.) {
-//            throw new IOException("Could not create table " + filePath);
-//        }
+        else if (!newFile.createNewFile()) {
+            throw new IOException("Could not create table " + filePath);
+        }
         // add column headings to file
         Table newTable = new Table(newFile, attributeList);
         newTable.saveToFile(newFile);
 
-        //        return this.newFile;
         return newTable;
     }
 

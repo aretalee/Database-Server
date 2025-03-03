@@ -10,6 +10,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.util.List;
 
 /** This class implements the DB server. */
 public class DBServer {
@@ -48,9 +49,15 @@ public class DBServer {
         // receive query -> turn into string
         // tokenise + parse query
         // call corresponding operation
-        // print table content in here (if needed)
         // give response [OK]/[ERROR]
+        // print table content in here (if needed)
 
+        QueryLexer queryLexer = new QueryLexer(command);
+        queryLexer.setup();
+        List<String> tokens = queryLexer.getTokens();
+
+        QueryParser parser = new QueryParser();
+        parser.parseQuery(tokens);
 
 
         return "";

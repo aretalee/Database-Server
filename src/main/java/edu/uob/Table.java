@@ -97,7 +97,7 @@ public class Table {
 //    public File insertRecord(File file) {
 //        // same at INSERT (adds new row)
 //
-//        // need to auto-gen ID for each row
+//        // need to auto-gen ID for e ach row
 //
 //        return file;
 //    }

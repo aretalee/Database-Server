@@ -49,8 +49,6 @@ public class QueryParser {
     // function of query depends on 1st word in ArrayList<String>
     // USE vs SELECT vs CREATE etc.
 
-    // is it ok for the specific parsers for each Query to be in the classes? rather than in here
-
 
     public List<List<String>> parseQuery(List<String> query) {
 

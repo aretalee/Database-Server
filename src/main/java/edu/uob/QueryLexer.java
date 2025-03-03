@@ -44,7 +44,7 @@ public class QueryLexer{
                 // If it's not a string literal, it must be query text (which needs further processing)
             else {
                 // Tokenise the fragment into an array of strings - this is the "clever" bit !
-                String[] nextBatchOfTokens = tokenise(fragments[i]); //.toLowerCase());
+                String[] nextBatchOfTokens = tokenise(fragments[i]);
                 // Then copy all the tokens into the "result" list (needs a bit of conversion)
                 tokens.addAll(Arrays.asList(nextBatchOfTokens));
             }
