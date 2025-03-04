@@ -12,16 +12,26 @@ public class Update {
 
     // must call Comparer.java method before this to unsure conditions have already been checked
 
-    public void updateTable(Table chosenTable, String chosenHeader, String value) throws IOException {
+    public void updateTable(Table chosenTable, List<String> nameValueList) throws IOException {
 
-        int chosenIndex = ColumnIndexFinder.findColumnIndex(chosenTable, chosenHeader);
+        int attributeIndex = 0;
+        int valueIndex = 1;
 
-        if(chosenIndex != -1) { // remove magic number later
-            for(List<String> row : chosenTable.accessTable()) {
-                // assume table has already been filtered
-                row.set(chosenIndex, value);
+        while (attributeIndex < nameValueList.size()) {
+            int chosenIndex = ColumnIndexFinder.findColumnIndex(chosenTable, nameValueList.get(attributeIndex));
+
+            if(chosenIndex != -1) { // remove magic number later
+                for(List<String> row : chosenTable.accessTable()) {
+                    // assume table has already been filtered
+                    row.set(chosenIndex, nameValueList.get(valueIndex));
+                }
             }
+            attributeIndex += 2;
+            valueIndex += 2;
         }
+
+
+
 
         // save back to filesystem
         chosenTable.saveToFile(chosenTable.getTableFile());

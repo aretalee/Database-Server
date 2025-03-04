@@ -1,5 +1,7 @@
 package edu.uob;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,8 +17,11 @@ import java.util.List;
 // think of way to implement parsing for conditions
 // may factor out adding to files as a general method e.g. the below
 //        List<String> queryType = new ArrayList<String>();
-//        queryType.add(query.get(0));
-//        tempQueryTerms.add(queryType);
+//        queryType = (query.get(0));
+//        queryType = (queryType);
+
+// all places with something = null --> error handling needs to be added!!!!!!
+
 
 public class QueryParser {
 
@@ -50,161 +55,161 @@ public class QueryParser {
     // USE vs SELECT vs CREATE etc.
 
 
-    public void parseQuery(List<String> query, DBServer server) {
+    public void parseQuery(List<String> query, DBServer server) throws IOException {
 
         // if return null -> invalid query
 
-        List<List<String>> tempQueryTerms = new ArrayList<List<String>>();
+//        String queryType = new ArrayList<List<String>>();
 
         if (!isThereSemicolon(query.get(query.size() - 1))) {
-            tempQueryTerms = null;
+            String trueOrFalse = null;
         }
 
-        List<String> queryType = new ArrayList<String>();
-        queryType.add(query.get(0));
-        tempQueryTerms.add(queryType);
+        String queryType = query.get(0);
 
 
         // need to make this less complex...
 
         switch (query.get(0).toLowerCase()) {
-            case "use" -> parseUse(tempQueryTerms, query);
-            case "create" -> parseCreate(tempQueryTerms, query);
-            case "drop" -> parseDrop(tempQueryTerms, query);
-            case "alter" -> parseAlter(tempQueryTerms, query);
-            case "insert" -> parseInsert(tempQueryTerms, query);
-            case "select" -> parseSelect(tempQueryTerms, query);
-            case "update" -> parseUpdate(tempQueryTerms, query);
-            case "delete" -> parseDelete(tempQueryTerms, query);
-            case "join" -> parseJoin(tempQueryTerms, query);
-            default -> tempQueryTerms = null;
+            case "use" -> parseUse(server, query);
+            case "create" -> parseCreate(server, query);
+            case "drop" -> parseDrop(server, query);
+            case "alter" -> parseAlter(server, query);
+            case "insert" -> parseInsert(server, query);
+            case "select" -> parseSelect(server, query);
+            case "update" -> parseUpdate(server, query);
+            case "delete" -> parseDelete(server, query);
+            case "join" -> parseJoin(server, query);
+            default -> queryType = null;
 
         }
 
 //        return queryTerms;
     }
 
-    public void parseUse(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseUse(DBServer server, List<String> query) throws IOException {
 
         if (query.size() != 3 || !checkAlphaNumeric(query.get(1))
                 || isThereReservedWord(query.get(1))) {
-            tempQueryTerms = null;
+            throw new IOException(query.get(1) + " is a reserved word");
         }
 
-        List<String> fileName = new ArrayList<String>();
+        String databaseName = query.get(1);
+        server.setCurrentDatabase(databaseName);
+        Use use = new Use();
+        use.switchDatabases(server.getStorageFolderPath(), databaseName);
 
-        fileName.add(query.get(1));
-        tempQueryTerms.add(fileName);
-
-//        return tempQueryTerms;
+//        return queryType;
     }
 
-    public void parseCreate(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseCreate(DBServer server, List<String> query) throws IOException {
 
         // need to simplify this...
-
-
-        List<String> fileName = new ArrayList<String>();
         List<String> attributeList = new ArrayList<String>();
 
+        if ((!query.get(1).equalsIgnoreCase("database") && !query.get(1).equalsIgnoreCase("table"))
+                || (query.get(1).equalsIgnoreCase("database") && query.size() != 4)
+                || (query.get(1).equalsIgnoreCase("table") && query.size() < 4)
+                || !checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))) {
+            throw new IOException(query.get(2) + " is a reserved word");
+        }
+        String fileName = query.get(2);
 
-            if ((!query.get(1).equalsIgnoreCase("database") && !query.get(1).equalsIgnoreCase("table"))
-                    || (query.get(1).equalsIgnoreCase("database") && query.size() != 4)
-                    || (query.get(1).equalsIgnoreCase("table") && query.size() < 4)
-                    || !checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))) {
-                tempQueryTerms = null;
+        if (query.size() > 4) {
+            if (!query.get(3).equalsIgnoreCase("(")) {
+                throw new IOException("Query has too few arguments");
             }
-            fileName.add(query.get(2));
-            tempQueryTerms.add(fileName);
+            int index = 4;
 
-            if (query.size() > 4) {
-                if (!query.get(3).equalsIgnoreCase("(")) {
-                    tempQueryTerms = null;
-                }
-                int index = 4;
-                attributeList = addToList(attributeList, query, index);
-                if (!query.get(query.size() - 2).equalsIgnoreCase(")")
-                        || !isListValid(attributeList, "AttributeList")) {
-                    tempQueryTerms = null;
-                }
-                tempQueryTerms.add(attributeList);
+            attributeList = addToList(attributeList, query, index, "AttributeList");
+            if (!query.get(query.size() - 2).equalsIgnoreCase(")")
+                    || !isListValid(attributeList, "AttributeList")) {
+                throw new IOException("invalid query");
             }
+        }
 //            else {
 //                return null;
 //            }
 
-
-
-//        return tempQueryTerms;
+        Create create = new Create();
+        if (query.get(1).equalsIgnoreCase("database")) {
+            create.createDatabase(server.getStorageFolderPath(), fileName);
+        } else {
+            String databasePath = server.getStorageFolderPath() + File.separator + server.getCurrentDatabase();
+            create.createTable(databasePath,  fileName, attributeList);
+        }
+//        return queryType;
     }
 
-    public void parseDrop(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseDrop(DBServer server, List<String> query) throws IOException {
 
         if (query.size() != 4 || (!query.get(1).equalsIgnoreCase("database")
                 && !query.get(1).equalsIgnoreCase("table")) || !checkAlphaNumeric(query.get(2))
                 || isThereReservedWord(query.get(2))) {
-            System.out.println("error");
-            tempQueryTerms = null;
+            throw new IOException("invalid query");
         }
 
-        List<String> fileName = new ArrayList<String>();
-        fileName.add(query.get(2));
-        tempQueryTerms.add(fileName);
+        String fileName = query.get(2);
 
-//        return tempQueryTerms;
+        Drop drop = new Drop();
+        if (query.get(1).equalsIgnoreCase("database")) {
+            String filePath = server.getStorageFolderPath() + File.separator + fileName;
+            drop.dropFile(filePath);
+        } else {
+            String filePath = server.getStorageFolderPath() + File.separator + server.getStorageFolderPath() + File.separator + fileName;
+            drop.dropFile(filePath);
+            // does DROP TABLE only work in specified database? or is it able to drop table in another one
+        }
+        String filePath = server.getStorageFolderPath() + File.separator + server.getCurrentDatabase();
+
+
+//        return queryType;
     }
 
-    public void parseAlter(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseAlter(DBServer server, List<String> query) throws IOException {
 
         if (query.size() != 6 || !query.get(1).equalsIgnoreCase("table")
                 || !checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))
                 || (!query.get(3).equalsIgnoreCase("add") && !query.get(3).equalsIgnoreCase("drop"))
                 || !checkAlphaNumeric(query.get(4)) || isThereReservedWord(query.get(4))) {
-            tempQueryTerms = null;
+            throw new IOException("invalid query");
         }
 
-        List<String> fileName = new ArrayList<String>();
-        fileName.add(query.get(2));
-        tempQueryTerms.add(fileName);
+        String tableName = query.get(2);
+        String alterationType = query.get(3);
+        String attributeName = query.get(4);
 
-        List<String> alterationType = new ArrayList<String>();
-        alterationType.add(query.get(3));
-        tempQueryTerms.add(alterationType);
+        Alter alter = new Alter();
+        alter.alterTable(server.getTable(tableName), alterationType, attributeName);
 
-        List<String> attributeName = new ArrayList<String>();
-        attributeName.add(query.get(4));
-        tempQueryTerms.add(attributeName);
-
-//        return tempQueryTerms;
+//        return queryType;
     }
 
-    public void parseInsert(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseInsert(DBServer server, List<String> query) throws IOException{
 
         if (!query.get(1).equalsIgnoreCase(("into")) || !checkAlphaNumeric(query.get(2))
                 || isThereReservedWord(query.get(2)) || !query.get(3).equalsIgnoreCase(("values"))
                 || !query.get(4).equalsIgnoreCase("(")) {
-            tempQueryTerms = null;
+            throw new IOException("invalid query");
         }
 
-        List<String> fileName = new ArrayList<String>();
-        fileName.add(query.get(2));
-        tempQueryTerms.add(fileName);
+        String tableName = query.get(2);
 
         List<String> valueList = new ArrayList<String>();
         int index = 5;
-        valueList = addToList(valueList, query, index);
+        valueList = addToList(valueList, query, index, "ValueList");
 
         if (!query.get(query.size() - 2).equalsIgnoreCase(")")) {
-            System.out.println("error here");
-            tempQueryTerms = null;
+            throw new IOException("invalid query");
         }
 
-        tempQueryTerms.add(valueList);
+        Insert insert = new Insert();
+        insert.insertIntoTable(server.getTable(tableName), valueList);
 
-//        return tempQueryTerms;
+//        return queryType;
     }
 
-    public void parseSelect(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseSelect(DBServer server, List<String> query) throws IOException {
 
         List<String> wildAttributeList = new ArrayList<String>();
         int index = 1;
@@ -212,7 +217,7 @@ public class QueryParser {
         if (query.get(1).equalsIgnoreCase("*")) {
             wildAttributeList.add(query.get(1));
         } else {
-            wildAttributeList = addToList(wildAttributeList, query, index);
+            wildAttributeList = addToList(wildAttributeList, query, index, "WildAttributeList");
         }
 
         index = wildAttributeList.size() + index;
@@ -220,72 +225,77 @@ public class QueryParser {
                 || !checkAlphaNumeric(query.get(index + 1))
                 || isThereReservedWord(query.get(index + 1))
                 || !isListValid(wildAttributeList, "WildAttributeList")) {
-            tempQueryTerms = null;
+            throw new IOException("invalid query");
         }
 
-        tempQueryTerms.add(wildAttributeList);
         index++;
 
-        List<String> fileName = new ArrayList<String>();
-        fileName.add(query.get(index));
-        tempQueryTerms.add(fileName);
+        String tableName = query.get(index);
         index++;
 
         if ((query.size() - 2) != (index)) {
             // query.size() - 2 cause minus ";" and [tablename] to et to where index should be when list = *
             if (!query.get(index).equalsIgnoreCase("where")) {
-                tempQueryTerms = null;
+                throw new IOException("invalid query");
             }
-            parseCondition(tempQueryTerms, query, index + 1);
+            parseCondition(server, query, index + 1);
         }
 
+        Select select = new Select();
+        select.selectRecords(server.getTable(tableName), wildAttributeList);
 
-//        return tempQueryTerms;
+//        return queryType;
     }
 
-    public void parseUpdate(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseUpdate(DBServer server, List<String> query) throws IOException {
 
         if (!checkAlphaNumeric(query.get(1)) || isThereReservedWord(query.get(1))
                 || !query.get(2).equalsIgnoreCase(("set"))) {
-            tempQueryTerms = null;
+            throw new IOException("invalid query");
         }
+
+        String tableName = query.get(2);
 
         List<String> nameValueList = new ArrayList<String>();
         int index = 3;
-        nameValueList = addToList(nameValueList, query, index);
+        nameValueList = addToList(nameValueList, query, index, "NameValueList");
 
         index = nameValueList.size() + index;
         if (!query.get(index).equalsIgnoreCase("where")
                 || !isListValid(nameValueList, "NameValueList")) {
-            tempQueryTerms = null;
+            throw new IOException("invalid query");
         }
 
-        tempQueryTerms.add(nameValueList);
 
         index++;
-        parseCondition(tempQueryTerms, query, index);
+        parseCondition(server, query, index);
 
-//        return tempQueryTerms;
+        Update update = new Update();
+        update.updateTable(server.getTable(tableName), nameValueList);
+
+
+//        return queryType;
     }
 
-    public void parseDelete(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseDelete(DBServer server, List<String> query) throws IOException {
 
         if (!query.get(1).equalsIgnoreCase(("from")) || !checkAlphaNumeric(query.get(2))
                 || isThereReservedWord(query.get(2)) || !query.get(4).equalsIgnoreCase(("where"))
                 ||!query.get(3).equalsIgnoreCase(("values")) || !query.get(4).equalsIgnoreCase("(")) {
-            tempQueryTerms = null;
+            throw new IOException("invalid query");
         }
 
-        List<String> fileName = new ArrayList<String>();
-        fileName.add(query.get(2));
-        tempQueryTerms.add(fileName);
+        String tableName = query.get(2);
 
-        parseCondition(tempQueryTerms, query, 4);
+        parseCondition(server, query, 4);
 
-//        return tempQueryTerms;
+        Delete delete = new Delete();
+        delete.deleteRecord(server.getTable(tableName));
+
+//        return queryType;
     }
 
-    public void parseJoin(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseJoin(DBServer server, List<String> query) throws IOException {
 
         if (query.size() != 9 || !checkAlphaNumeric(query.get(1))
                 || !query.get(2).equalsIgnoreCase("and")
@@ -294,48 +304,63 @@ public class QueryParser {
                 || !checkAlphaNumeric(query.get(5)) || isThereReservedWord(query.get(5))
                 || !query.get(6).equalsIgnoreCase("and")
                 || !checkAlphaNumeric(query.get(7)) || isThereReservedWord(query.get(7))) {
-            tempQueryTerms = null;
+            throw new IOException("invalid query");
         }
 
-        List<String> fileName = new ArrayList<String>();
-        fileName.add(query.get(1));
-        fileName.add(query.get(3));
-        tempQueryTerms.add(fileName);
+        String fileNameOne = query.get(1);
+        String fileNameTwo = query.get(3);
 
-        List<String> attributeName = new ArrayList<String>();
-        attributeName.add(query.get(5));
-        attributeName.add(query.get(7));
-        tempQueryTerms.add(attributeName);
+        String attributeNameOne = query.get(5);
+        String attributeNameTwo = query.get(7);
 
-//        return tempQueryTerms;
+        Join join = new Join();
+
+
+//        return queryType;
     }
 
-    public void parseCondition(List<List<String>> tempQueryTerms, List<String> query, int startIndex) {
+    public void parseCondition(DBServer server, List<String> query, int startIndex) throws IOException {
 
         // maybe need to use recursive descent
 
         List<String> conditions = new ArrayList<String>();
 
         for (int i = startIndex; i < query.size(); i++) {
-            if (! query.get(i).equalsIgnoreCase("(") && query.get(i).equalsIgnoreCase(")")
+            if (! query.get(i).equals("(") && query.get(i).equals(")")
                       ) {
-                tempQueryTerms = null;
+                throw new IOException("invalid query");
             }
 
         }
 
-//        return tempQueryTerms;
+//        return queryType;
     }
 
-    public List<String> addToList(List<String> chosenList, List<String> query, int index) {
+    public List<String> addToList(List<String> chosenList, List<String> query, int index, String listType) {
 
-        while (!query.get(index).equalsIgnoreCase(")")) {
-            if (!query.get(index).equalsIgnoreCase(",")) {
-                chosenList.add(query.get(index));
+        if (listType.equalsIgnoreCase("NameValueList")) {
+            while (!query.get(index).equalsIgnoreCase("WHERE")) {
+                addItem(chosenList, query, index);
+                index++;
             }
-            index++;
+        } else if (listType.equalsIgnoreCase("WildAttributeList")) {
+            while (!query.get(index).equalsIgnoreCase("FROM")) {
+                addItem(chosenList, query, index);
+                index++;
+            }
+        } else {
+            while (!query.get(index).equals(")")) {
+                addItem(chosenList, query, index);
+                index++;
+            }
         }
         return chosenList;
+    }
+
+    public void addItem(List<String> chosenList, List<String> query, int index) {
+        if (!query.get(index).equals(",")) {
+            chosenList.add(query.get(index));
+        }
     }
 
     public boolean isListValid(List<String> chosenList, String listType) {
@@ -350,7 +375,7 @@ public class QueryParser {
                     return false;
                 }
             } else {
-                if ((!chosenList.get(i).equalsIgnoreCase(",") && !chosenList.get(i).equalsIgnoreCase("*"))
+                if ((!chosenList.get(i).equals(",") && !chosenList.get(i).equals("*"))
                         && (!checkAlphaNumeric(chosenList.get(i))
                         || isThereReservedWord(chosenList.get(i)))) {
                     return false;

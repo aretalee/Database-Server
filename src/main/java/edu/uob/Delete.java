@@ -11,15 +11,13 @@ import java.util.List;
 public class Delete {
     // must call Comparer.java method before this to unsure conditions have already been checked
 
-    public void deleteRecord(Table chosenTable, String chosenHeader) throws IOException {
+    public void deleteRecord(Table chosenTable) throws IOException {
 
-        int chosenIndex = ColumnIndexFinder.findColumnIndex(chosenTable, chosenHeader);
-
-        if(chosenIndex != -1) { // remove magic number later
-            for(List<String> row : chosenTable.accessTable()) {
+        int currentIndex = 0;
+        for(List<String> row : chosenTable.accessTable()) {
                 // assume table has already been filtered
-                row.remove(chosenIndex);
-            }
+            row.remove(currentIndex);
+            currentIndex++;
         }
 
         // save back to filesystem

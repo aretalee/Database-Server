@@ -2,7 +2,6 @@ package edu.uob;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -17,6 +16,10 @@ public class DBServer {
 
     private static final char END_OF_TRANSMISSION = 4;
     private String storageFolderPath;
+
+    private List<Database> allDatabases;
+    private List<Table> allTables;
+    private String currentDatabase;
 
     public static void main(String args[]) throws IOException {
         DBServer server = new DBServer();
@@ -61,6 +64,29 @@ public class DBServer {
 
 
         return "";
+    }
+
+    public String getStorageFolderPath() {
+        return this.storageFolderPath;
+    }
+
+    public String getCurrentDatabase() {
+        return this.currentDatabase;
+    }
+
+    public void setCurrentDatabase(String currentDatabase) {
+        this.currentDatabase = currentDatabase;
+    }
+
+    public Table getTable(String tableName) {
+       Table toBeReturned = null;
+
+        for (Table currentTable: this.allTables) {
+           if (currentTable.getTableName().equals(tableName)) {
+               toBeReturned = currentTable;
+           }
+       }
+        return toBeReturned;
     }
 
     //  === Methods below handle networking aspects of the project - you will not need to change these ! ===
