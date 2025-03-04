@@ -15,19 +15,20 @@ public class Use {
         System.out.println(currentDB.getName());
 
         Use use = new Use();
-        Database switchedDB = use.switchDatabases(new File(folderPath), "dataone");
+        Database switchedDB = use.switchDatabases(folderPath, "dataone");
         System.out.println(switchedDB.getDatabaseName());
 
-        switchedDB = use.switchDatabases(new File(folderPath), "datatwo");
+        switchedDB = use.switchDatabases(folderPath, "datatwo");
         System.out.println(switchedDB.getDatabaseName());
 
     }
 
-    public Database switchDatabases(File databases, String databaseName) throws IOException {
+    public Database switchDatabases(String databasesPath, String databaseName) throws IOException {
         // same as USE
 
         // need to check if this works
 
+        File databases = new File(databasesPath);
         File[] allDatabases = databases.listFiles();
         File requestedDatabase = null;
 

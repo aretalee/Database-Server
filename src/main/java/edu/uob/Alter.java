@@ -31,7 +31,7 @@ public class Alter {
         insert.insertIntoTable(newTable, parameters);
 
         Alter alter = new Alter();
-        alter.alterTable("drop", newTable, "NAME");
+        alter.alterTable(newTable, "drop", "NAME");
 
         List<String> list = newTable.accessColumnHeaders();
         for (String header : list) {
@@ -40,7 +40,7 @@ public class Alter {
 
     }
 
-    public void alterTable(String valueType, Table chosenTable, String chosenHeader) throws IOException {
+    public void alterTable(Table chosenTable, String valueType, String chosenHeader) throws IOException {
 
         // best to separate out into smaller functions
 

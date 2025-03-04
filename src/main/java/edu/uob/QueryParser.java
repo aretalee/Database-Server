@@ -30,34 +30,34 @@ public class QueryParser {
 
     public static void main(String[] args) {
 
-        String newQuery = "JOIN coursework AND marks ON insert AND id;";
-        QueryLexer lexer = new QueryLexer(newQuery);
-        lexer.setup();
-        ArrayList<String> tokens = lexer.getTokens();
-
-        QueryParser parser = new QueryParser();
-        List<List<String>> parsedQuery = parser.parseQuery(tokens);
-
-        for (List<String> queryTerm : parsedQuery) {
-            for (String term : queryTerm) {
-                System.out.println(term);
-            }
-        }
-
+//        String newQuery = "JOIN coursework AND marks ON insert AND id;";
+//        QueryLexer lexer = new QueryLexer(newQuery);
+//        lexer.setup();
+//        ArrayList<String> tokens = lexer.getTokens();
+//
+//        QueryParser parser = new QueryParser();
+//        List<List<String>> parsedQuery = parser.parseQuery(tokens);
+//
+//        for (List<String> queryTerm : parsedQuery) {
+//            for (String term : queryTerm) {
+//                System.out.println(term);
+//            }
+//        }
+//
     }
 
     // function of query depends on 1st word in ArrayList<String>
     // USE vs SELECT vs CREATE etc.
 
 
-    public List<List<String>> parseQuery(List<String> query) {
+    public void parseQuery(List<String> query, DBServer server) {
 
         // if return null -> invalid query
 
         List<List<String>> tempQueryTerms = new ArrayList<List<String>>();
 
         if (!isThereSemicolon(query.get(query.size() - 1))) {
-            queryTerms = null;
+            tempQueryTerms = null;
         }
 
         List<String> queryType = new ArrayList<String>();
@@ -68,27 +68,27 @@ public class QueryParser {
         // need to make this less complex...
 
         switch (query.get(0).toLowerCase()) {
-            case "use" -> queryTerms = parseUse(tempQueryTerms, query);
-            case "create" -> queryTerms = parseCreate(tempQueryTerms, query);
-            case "drop" -> queryTerms = parseDrop(tempQueryTerms, query);
-            case "alter" -> queryTerms = parseAlter(tempQueryTerms, query);
-            case "insert" -> queryTerms = parseInsert(tempQueryTerms, query);
-            case "select" -> queryTerms = parseSelect(tempQueryTerms, query);
-            case "update" -> queryTerms = parseUpdate(tempQueryTerms, query);
-            case "delete" -> queryTerms = parseDelete(tempQueryTerms, query);
-            case "join" -> queryTerms = parseJoin(tempQueryTerms, query);
-            default -> queryTerms = null;
+            case "use" -> parseUse(tempQueryTerms, query);
+            case "create" -> parseCreate(tempQueryTerms, query);
+            case "drop" -> parseDrop(tempQueryTerms, query);
+            case "alter" -> parseAlter(tempQueryTerms, query);
+            case "insert" -> parseInsert(tempQueryTerms, query);
+            case "select" -> parseSelect(tempQueryTerms, query);
+            case "update" -> parseUpdate(tempQueryTerms, query);
+            case "delete" -> parseDelete(tempQueryTerms, query);
+            case "join" -> parseJoin(tempQueryTerms, query);
+            default -> tempQueryTerms = null;
 
         }
 
-        return queryTerms;
+//        return queryTerms;
     }
 
-    public List<List<String>> parseUse(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseUse(List<List<String>> tempQueryTerms, List<String> query) {
 
         if (query.size() != 3 || !checkAlphaNumeric(query.get(1))
                 || isThereReservedWord(query.get(1))) {
-            return null;
+            tempQueryTerms = null;
         }
 
         List<String> fileName = new ArrayList<String>();
@@ -96,10 +96,10 @@ public class QueryParser {
         fileName.add(query.get(1));
         tempQueryTerms.add(fileName);
 
-        return tempQueryTerms;
+//        return tempQueryTerms;
     }
 
-    public List<List<String>> parseCreate(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseCreate(List<List<String>> tempQueryTerms, List<String> query) {
 
         // need to simplify this...
 
@@ -112,20 +112,20 @@ public class QueryParser {
                     || (query.get(1).equalsIgnoreCase("database") && query.size() != 4)
                     || (query.get(1).equalsIgnoreCase("table") && query.size() < 4)
                     || !checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))) {
-                return null;
+                tempQueryTerms = null;
             }
             fileName.add(query.get(2));
             tempQueryTerms.add(fileName);
 
             if (query.size() > 4) {
                 if (!query.get(3).equalsIgnoreCase("(")) {
-                    return null;
+                    tempQueryTerms = null;
                 }
                 int index = 4;
                 attributeList = addToList(attributeList, query, index);
                 if (!query.get(query.size() - 2).equalsIgnoreCase(")")
                         || !isListValid(attributeList, "AttributeList")) {
-                    return null;
+                    tempQueryTerms = null;
                 }
                 tempQueryTerms.add(attributeList);
             }
@@ -133,32 +133,34 @@ public class QueryParser {
 //                return null;
 //            }
 
-        return tempQueryTerms;
+
+
+//        return tempQueryTerms;
     }
 
-    public List<List<String>> parseDrop(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseDrop(List<List<String>> tempQueryTerms, List<String> query) {
 
         if (query.size() != 4 || (!query.get(1).equalsIgnoreCase("database")
                 && !query.get(1).equalsIgnoreCase("table")) || !checkAlphaNumeric(query.get(2))
                 || isThereReservedWord(query.get(2))) {
             System.out.println("error");
-            return null;
+            tempQueryTerms = null;
         }
 
         List<String> fileName = new ArrayList<String>();
         fileName.add(query.get(2));
         tempQueryTerms.add(fileName);
 
-        return tempQueryTerms;
+//        return tempQueryTerms;
     }
 
-    public List<List<String>> parseAlter(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseAlter(List<List<String>> tempQueryTerms, List<String> query) {
 
         if (query.size() != 6 || !query.get(1).equalsIgnoreCase("table")
                 || !checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))
                 || (!query.get(3).equalsIgnoreCase("add") && !query.get(3).equalsIgnoreCase("drop"))
                 || !checkAlphaNumeric(query.get(4)) || isThereReservedWord(query.get(4))) {
-            return null;
+            tempQueryTerms = null;
         }
 
         List<String> fileName = new ArrayList<String>();
@@ -173,15 +175,15 @@ public class QueryParser {
         attributeName.add(query.get(4));
         tempQueryTerms.add(attributeName);
 
-        return tempQueryTerms;
+//        return tempQueryTerms;
     }
 
-    public List<List<String>> parseInsert(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseInsert(List<List<String>> tempQueryTerms, List<String> query) {
 
         if (!query.get(1).equalsIgnoreCase(("into")) || !checkAlphaNumeric(query.get(2))
                 || isThereReservedWord(query.get(2)) || !query.get(3).equalsIgnoreCase(("values"))
                 || !query.get(4).equalsIgnoreCase("(")) {
-            return null;
+            tempQueryTerms = null;
         }
 
         List<String> fileName = new ArrayList<String>();
@@ -194,15 +196,15 @@ public class QueryParser {
 
         if (!query.get(query.size() - 2).equalsIgnoreCase(")")) {
             System.out.println("error here");
-            return null;
+            tempQueryTerms = null;
         }
 
         tempQueryTerms.add(valueList);
 
-        return tempQueryTerms;
+//        return tempQueryTerms;
     }
 
-    public List<List<String>> parseSelect(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseSelect(List<List<String>> tempQueryTerms, List<String> query) {
 
         List<String> wildAttributeList = new ArrayList<String>();
         int index = 1;
@@ -218,7 +220,7 @@ public class QueryParser {
                 || !checkAlphaNumeric(query.get(index + 1))
                 || isThereReservedWord(query.get(index + 1))
                 || !isListValid(wildAttributeList, "WildAttributeList")) {
-            return null;
+            tempQueryTerms = null;
         }
 
         tempQueryTerms.add(wildAttributeList);
@@ -232,20 +234,20 @@ public class QueryParser {
         if ((query.size() - 2) != (index)) {
             // query.size() - 2 cause minus ";" and [tablename] to et to where index should be when list = *
             if (!query.get(index).equalsIgnoreCase("where")) {
-                return null;
+                tempQueryTerms = null;
             }
-            tempQueryTerms = parseCondition(tempQueryTerms, query, index + 1);
+            parseCondition(tempQueryTerms, query, index + 1);
         }
 
 
-        return tempQueryTerms;
+//        return tempQueryTerms;
     }
 
-    public List<List<String>> parseUpdate(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseUpdate(List<List<String>> tempQueryTerms, List<String> query) {
 
         if (!checkAlphaNumeric(query.get(1)) || isThereReservedWord(query.get(1))
                 || !query.get(2).equalsIgnoreCase(("set"))) {
-            return null;
+            tempQueryTerms = null;
         }
 
         List<String> nameValueList = new ArrayList<String>();
@@ -255,35 +257,35 @@ public class QueryParser {
         index = nameValueList.size() + index;
         if (!query.get(index).equalsIgnoreCase("where")
                 || !isListValid(nameValueList, "NameValueList")) {
-            return null;
+            tempQueryTerms = null;
         }
 
         tempQueryTerms.add(nameValueList);
 
         index++;
-        tempQueryTerms = parseCondition(tempQueryTerms, query, index);
+        parseCondition(tempQueryTerms, query, index);
 
-        return tempQueryTerms;
+//        return tempQueryTerms;
     }
 
-    public List<List<String>> parseDelete(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseDelete(List<List<String>> tempQueryTerms, List<String> query) {
 
         if (!query.get(1).equalsIgnoreCase(("from")) || !checkAlphaNumeric(query.get(2))
                 || isThereReservedWord(query.get(2)) || !query.get(4).equalsIgnoreCase(("where"))
                 ||!query.get(3).equalsIgnoreCase(("values")) || !query.get(4).equalsIgnoreCase("(")) {
-            return null;
+            tempQueryTerms = null;
         }
 
         List<String> fileName = new ArrayList<String>();
         fileName.add(query.get(2));
         tempQueryTerms.add(fileName);
 
-        tempQueryTerms = parseCondition(tempQueryTerms, query, 4);
+        parseCondition(tempQueryTerms, query, 4);
 
-        return tempQueryTerms;
+//        return tempQueryTerms;
     }
 
-    public List<List<String>> parseJoin(List<List<String>> tempQueryTerms, List<String> query) {
+    public void parseJoin(List<List<String>> tempQueryTerms, List<String> query) {
 
         if (query.size() != 9 || !checkAlphaNumeric(query.get(1))
                 || !query.get(2).equalsIgnoreCase("and")
@@ -292,7 +294,7 @@ public class QueryParser {
                 || !checkAlphaNumeric(query.get(5)) || isThereReservedWord(query.get(5))
                 || !query.get(6).equalsIgnoreCase("and")
                 || !checkAlphaNumeric(query.get(7)) || isThereReservedWord(query.get(7))) {
-            return null;
+            tempQueryTerms = null;
         }
 
         List<String> fileName = new ArrayList<String>();
@@ -305,10 +307,10 @@ public class QueryParser {
         attributeName.add(query.get(7));
         tempQueryTerms.add(attributeName);
 
-        return tempQueryTerms;
+//        return tempQueryTerms;
     }
 
-    public List<List<String>> parseCondition(List<List<String>> tempQueryTerms, List<String> query, int startIndex) {
+    public void parseCondition(List<List<String>> tempQueryTerms, List<String> query, int startIndex) {
 
         // maybe need to use recursive descent
 
@@ -317,12 +319,12 @@ public class QueryParser {
         for (int i = startIndex; i < query.size(); i++) {
             if (! query.get(i).equalsIgnoreCase("(") && query.get(i).equalsIgnoreCase(")")
                       ) {
-                return null;
+                tempQueryTerms = null;
             }
 
         }
 
-        return tempQueryTerms;
+//        return tempQueryTerms;
     }
 
     public List<String> addToList(List<String> chosenList, List<String> query, int index) {

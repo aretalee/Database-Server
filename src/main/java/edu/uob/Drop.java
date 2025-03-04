@@ -1,23 +1,22 @@
 package edu.uob;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.file.Paths;
-import java.nio.file.Files;
 
 public class Drop {
 
     public static void main(String args[]) throws IOException {
         Drop drop = new Drop();
 
-        String folderPath = Paths.get("databases").toAbsolutePath().toString() + File.separator + "dataone" + File.separator + "newtablefour.tab";
-        drop.dropFile(new File(folderPath));
+        String folderPath = Paths.get("databases").toAbsolutePath().toString() + File.separator + "datatwo" + File.separator + "newtablefour.tab";
+        drop.dropFile(folderPath);
 
     }
 
-    public void dropFile(File file) throws IOException {
+    public void dropFile(String filePath) throws IOException {
 //  public void dropFile(String directoryPath, File file) throws IOException {
+
+        File file = new File(filePath);
 
         if(!file.exists()) {
             throw new FileNotFoundException(file.getAbsolutePath());
@@ -37,8 +36,8 @@ public class Drop {
         }
     }
 
-    public File clearDirectory(File emptyDirectory) throws IOException {
-        File[] fileList = emptyDirectory.listFiles();
+    public File clearDirectory(File directory) throws IOException {
+        File[] fileList = directory.listFiles();
 
         if (fileList == null) {
             throw new NullPointerException("allDatabases");
@@ -49,10 +48,10 @@ public class Drop {
 
         if (fileList.length > 0) {
             for (File f : fileList) {
-                dropFile(f);
+                dropFile(f.getAbsolutePath());
             }
         }
-        return emptyDirectory;
+        return directory;
     }
 
 }

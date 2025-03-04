@@ -57,7 +57,7 @@ public class DBServer {
         List<String> tokens = queryLexer.getTokens();
 
         QueryParser parser = new QueryParser();
-        parser.parseQuery(tokens);
+        parser.parseQuery(tokens, this); // is this allowed
 
 
         return "";
