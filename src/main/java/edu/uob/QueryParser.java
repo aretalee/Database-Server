@@ -33,36 +33,34 @@ public class QueryParser {
 
     // all parsers with loops inside timeout :(
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
-//        String newQuery = "JOIN coursework AND marks ON insert AND id;";
-//        QueryLexer lexer = new QueryLexer(newQuery);
-//        lexer.setup();
-//        ArrayList<String> tokens = lexer.getTokens();
-//
-//        QueryParser parser = new QueryParser();
-//        List<List<String>> parsedQuery = parser.parseQuery(tokens);
-//
-//        for (List<String> queryTerm : parsedQuery) {
-//            for (String term : queryTerm) {
-//                System.out.println(term);
-//            }
-//        }
-//
+        String newQuery = "INSERT INTO marks VALUES ('Simon', 65, TRUE);";
+        QueryLexer lexer = new QueryLexer(newQuery);
+        lexer.setup();
+        ArrayList<String> tokens = lexer.getTokens();
+
+        QueryParser parser = new QueryParser();
+        DBServer server = new DBServer();
+        Boolean parsedQuery = parser.parseQuery(tokens, server);
+
+        System.out.println(parsedQuery);
+
     }
 
     // function of query depends on 1st word in ArrayList<String>
     // USE vs SELECT vs CREATE etc.
 
 
-    public void parseQuery(List<String> query, DBServer server) throws IOException {
+    public boolean parseQuery(List<String> query, DBServer server) throws IOException {
 
         // if return null -> invalid query
 
 //        String queryType = new ArrayList<List<String>>();
 
         if (!isThereSemicolon(query.get(query.size() - 1))) {
-            String trueOrFalse = null;
+            server.setErrorLine("Missing semicolon at end of query.");
+            return false;
         }
 
         String queryType = query.get(0);
@@ -80,29 +78,35 @@ public class QueryParser {
             case "update" -> parseUpdate(server, query);
             case "delete" -> parseDelete(server, query);
             case "join" -> parseJoin(server, query);
-            default -> queryType = null;
+            default -> {
+                server.setErrorLine("First word is not a valid query type.");
+                return false;
+            }
 
         }
 
 //        return queryTerms;
+        return true;
     }
 
-    public void parseUse(DBServer server, List<String> query) throws IOException {
+    public boolean parseUse(DBServer server, List<String> query) throws IOException {
 
         if (query.size() != 3 || !checkAlphaNumeric(query.get(1))
                 || isThereReservedWord(query.get(1))) {
-            throw new IOException(query.get(1) + " is a reserved word");
+            server.setErrorLine("Invalid query.");
+            return false;
         }
 
         String databaseName = query.get(1);
         server.setCurrentDatabase(databaseName);
         Use use = new Use();
-        use.switchDatabases(server.getStorageFolderPath(), databaseName);
+        use.switchDatabases(server.getStorageFolderPath(), databaseName, server);
 
 //        return queryType;
+        return true;
     }
 
-    public void parseCreate(DBServer server, List<String> query) throws IOException {
+    public boolean parseCreate(DBServer server, List<String> query) throws IOException {
 
         // need to simplify this...
         List<String> attributeList = new ArrayList<String>();
@@ -111,20 +115,23 @@ public class QueryParser {
                 || (query.get(1).equalsIgnoreCase("database") && query.size() != 4)
                 || (query.get(1).equalsIgnoreCase("table") && query.size() < 4)
                 || !checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))) {
-            throw new IOException(query.get(2) + " is a reserved word");
+            server.setErrorLine("Invalid query.");
+            return false;
         }
         String fileName = query.get(2);
 
         if (query.size() > 4) {
             if (!query.get(3).equalsIgnoreCase("(")) {
-                throw new IOException("Query has too few arguments");
+                server.setErrorLine("Invalid query.");
+                return false;
             }
             int index = 4;
 
             attributeList = addToList(attributeList, query, index, "AttributeList");
             if (!query.get(query.size() - 2).equalsIgnoreCase(")")
                     || !isListValid(attributeList, "AttributeList")) {
-                throw new IOException("invalid query");
+                server.setErrorLine("Invalid query.");
+                return false;
             }
         }
 //            else {
@@ -136,17 +143,19 @@ public class QueryParser {
             create.createDatabase(server.getStorageFolderPath(), fileName);
         } else {
             String databasePath = server.getStorageFolderPath() + File.separator + server.getCurrentDatabase();
-            create.createTable(databasePath,  fileName, attributeList);
+            create.createTable(databasePath,  fileName, attributeList, server);
         }
 //        return queryType;
+        return true;
     }
 
-    public void parseDrop(DBServer server, List<String> query) throws IOException {
+    public boolean parseDrop(DBServer server, List<String> query) throws IOException {
 
         if (query.size() != 4 || (!query.get(1).equalsIgnoreCase("database")
                 && !query.get(1).equalsIgnoreCase("table")) || !checkAlphaNumeric(query.get(2))
                 || isThereReservedWord(query.get(2))) {
-            throw new IOException("invalid query");
+            server.setErrorLine("Invalid query.");
+            return false;
         }
 
         String fileName = query.get(2);
@@ -154,25 +163,27 @@ public class QueryParser {
         Drop drop = new Drop();
         if (query.get(1).equalsIgnoreCase("database")) {
             String filePath = server.getStorageFolderPath() + File.separator + fileName;
-            drop.dropFile(filePath);
+            drop.dropFile(filePath, server);
         } else {
             String filePath = server.getStorageFolderPath() + File.separator + server.getStorageFolderPath() + File.separator + fileName;
-            drop.dropFile(filePath);
+            drop.dropFile(filePath, server);
             // does DROP TABLE only work in specified database? or is it able to drop table in another one
         }
         String filePath = server.getStorageFolderPath() + File.separator + server.getCurrentDatabase();
 
 
 //        return queryType;
+        return true;
     }
 
-    public void parseAlter(DBServer server, List<String> query) throws IOException {
+    public boolean parseAlter(DBServer server, List<String> query) throws IOException {
 
         if (query.size() != 6 || !query.get(1).equalsIgnoreCase("table")
                 || !checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))
                 || (!query.get(3).equalsIgnoreCase("add") && !query.get(3).equalsIgnoreCase("drop"))
                 || !checkAlphaNumeric(query.get(4)) || isThereReservedWord(query.get(4))) {
-            throw new IOException("invalid query");
+            server.setErrorLine("Invalid query.");
+            return false;
         }
 
         String tableName = query.get(2);
@@ -183,14 +194,16 @@ public class QueryParser {
         alter.alterTable(server.getTable(tableName), alterationType, attributeName);
 
 //        return queryType;
+        return true;
     }
 
-    public void parseInsert(DBServer server, List<String> query) throws IOException{
+    public boolean parseInsert(DBServer server, List<String> query) throws IOException{
 
         if (!query.get(1).equalsIgnoreCase(("into")) || !checkAlphaNumeric(query.get(2))
                 || isThereReservedWord(query.get(2)) || !query.get(3).equalsIgnoreCase(("values"))
                 || !query.get(4).equalsIgnoreCase("(")) {
-            throw new IOException("invalid query");
+            server.setErrorLine("Invalid query.");
+            return false;
         }
 
         String tableName = query.get(2);
@@ -200,16 +213,18 @@ public class QueryParser {
         valueList = addToList(valueList, query, index, "ValueList");
 
         if (!query.get(query.size() - 2).equalsIgnoreCase(")")) {
-            throw new IOException("invalid query");
+            server.setErrorLine("Invalid query.");
+            return false;
         }
 
         Insert insert = new Insert();
         insert.insertIntoTable(server.getTable(tableName), valueList);
 
 //        return queryType;
+        return true;
     }
 
-    public void parseSelect(DBServer server, List<String> query) throws IOException {
+    public boolean parseSelect(DBServer server, List<String> query) throws IOException {
 
         List<String> wildAttributeList = new ArrayList<String>();
         int index = 1;
@@ -225,7 +240,8 @@ public class QueryParser {
                 || !checkAlphaNumeric(query.get(index + 1))
                 || isThereReservedWord(query.get(index + 1))
                 || !isListValid(wildAttributeList, "WildAttributeList")) {
-            throw new IOException("invalid query");
+            server.setErrorLine("Invalid query.");
+            return false;
         }
 
         index++;
@@ -236,7 +252,8 @@ public class QueryParser {
         if ((query.size() - 2) != (index)) {
             // query.size() - 2 cause minus ";" and [tablename] to et to where index should be when list = *
             if (!query.get(index).equalsIgnoreCase("where")) {
-                throw new IOException("invalid query");
+                server.setErrorLine("Invalid query.");
+                return false;
             }
             parseCondition(server, query, index + 1);
         }
@@ -245,13 +262,15 @@ public class QueryParser {
         select.selectRecords(server.getTable(tableName), wildAttributeList);
 
 //        return queryType;
+        return true;
     }
 
-    public void parseUpdate(DBServer server, List<String> query) throws IOException {
+    public boolean parseUpdate(DBServer server, List<String> query) throws IOException {
 
         if (!checkAlphaNumeric(query.get(1)) || isThereReservedWord(query.get(1))
                 || !query.get(2).equalsIgnoreCase(("set"))) {
-            throw new IOException("invalid query");
+            server.setErrorLine("Invalid query.");
+            return false;
         }
 
         String tableName = query.get(2);
@@ -263,7 +282,8 @@ public class QueryParser {
         index = nameValueList.size() + index;
         if (!query.get(index).equalsIgnoreCase("where")
                 || !isListValid(nameValueList, "NameValueList")) {
-            throw new IOException("invalid query");
+            server.setErrorLine("Invalid query.");
+            return false;
         }
 
 
@@ -275,14 +295,16 @@ public class QueryParser {
 
 
 //        return queryType;
+        return true;
     }
 
-    public void parseDelete(DBServer server, List<String> query) throws IOException {
+    public boolean parseDelete(DBServer server, List<String> query) throws IOException {
 
         if (!query.get(1).equalsIgnoreCase(("from")) || !checkAlphaNumeric(query.get(2))
                 || isThereReservedWord(query.get(2)) || !query.get(4).equalsIgnoreCase(("where"))
                 ||!query.get(3).equalsIgnoreCase(("values")) || !query.get(4).equalsIgnoreCase("(")) {
-            throw new IOException("invalid query");
+            server.setErrorLine("Invalid query.");
+            return false;
         }
 
         String tableName = query.get(2);
@@ -293,9 +315,10 @@ public class QueryParser {
         delete.deleteRecord(server.getTable(tableName));
 
 //        return queryType;
+        return true;
     }
 
-    public void parseJoin(DBServer server, List<String> query) throws IOException {
+    public boolean parseJoin(DBServer server, List<String> query) throws IOException {
 
         if (query.size() != 9 || !checkAlphaNumeric(query.get(1))
                 || !query.get(2).equalsIgnoreCase("and")
@@ -304,7 +327,8 @@ public class QueryParser {
                 || !checkAlphaNumeric(query.get(5)) || isThereReservedWord(query.get(5))
                 || !query.get(6).equalsIgnoreCase("and")
                 || !checkAlphaNumeric(query.get(7)) || isThereReservedWord(query.get(7))) {
-            throw new IOException("invalid query");
+            server.setErrorLine("Invalid query.");
+            return false;
         }
 
         String fileNameOne = query.get(1);
@@ -317,9 +341,10 @@ public class QueryParser {
 
 
 //        return queryType;
+        return true;
     }
 
-    public void parseCondition(DBServer server, List<String> query, int startIndex) throws IOException {
+    public boolean parseCondition(DBServer server, List<String> query, int startIndex) throws IOException {
 
         // maybe need to use recursive descent
 
@@ -328,12 +353,14 @@ public class QueryParser {
         for (int i = startIndex; i < query.size(); i++) {
             if (! query.get(i).equals("(") && query.get(i).equals(")")
                       ) {
-                throw new IOException("invalid query");
+                server.setErrorLine("Invalid query.");
+                return false;
             }
 
         }
 
 //        return queryType;
+        return true;
     }
 
     public List<String> addToList(List<String> chosenList, List<String> query, int index, String listType) {

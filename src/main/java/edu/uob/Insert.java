@@ -19,21 +19,21 @@ public class Insert {
         attributeList.add("description");
         attributeList.add("type");
 
-        Create create = new Create();
-        Table newTable = create.createTable(folderPath, "NewTableFive", attributeList);
-
-        List<String> valueParameters = new ArrayList<String>();
-        valueParameters.add("Bob");
-        valueParameters.add("tired");
-        valueParameters.add("Blonde");
-
-        Insert insert = new Insert();
-        insert.insertIntoTable(newTable, valueParameters);
-
-        List<List<String>> list = newTable.accessTable();
-        for (List<String> row : list) {
-            System.out.println(row);
-        }
+//        Create create = new Create();
+//        Table newTable = create.createTable(folderPath, "NewTableFive", attributeList);
+//
+//        List<String> valueParameters = new ArrayList<String>();
+//        valueParameters.add("Bob");
+//        valueParameters.add("tired");
+//        valueParameters.add("Blonde");
+//
+//        Insert insert = new Insert();
+//        insert.insertIntoTable(newTable, valueParameters);
+//
+//        List<List<String>> list = newTable.accessTable();
+//        for (List<String> row : list) {
+//            System.out.println(row);
+//        }
 
     }
 

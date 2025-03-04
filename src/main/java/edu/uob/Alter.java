@@ -20,23 +20,23 @@ public class Alter {
         attributeList.add("type");
 
         Create create = new Create();
-        Table newTable = create.createTable(folderPath, "NewTableSix", attributeList);
-
-        List<String> parameters = new ArrayList<String>();
-        parameters.add("Bob");
-        parameters.add("tired");
-        parameters.add("Blonde");
-
-        Insert insert = new Insert();
-        insert.insertIntoTable(newTable, parameters);
-
-        Alter alter = new Alter();
-        alter.alterTable(newTable, "drop", "NAME");
-
-        List<String> list = newTable.accessColumnHeaders();
-        for (String header : list) {
-            System.out.println(header);
-        }
+//        Table newTable = create.createTable(folderPath, "NewTableSix", attributeList);
+//
+//        List<String> parameters = new ArrayList<String>();
+//        parameters.add("Bob");
+//        parameters.add("tired");
+//        parameters.add("Blonde");
+//
+//        Insert insert = new Insert();
+//        insert.insertIntoTable(newTable, parameters);
+//
+//        Alter alter = new Alter();
+//        alter.alterTable(newTable, "drop", "NAME");
+//
+//        List<String> list = newTable.accessColumnHeaders();
+//        for (String header : list) {
+//            System.out.println(header);
+//        }
 
     }
 

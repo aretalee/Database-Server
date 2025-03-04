@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 /** This class implements the DB server. */
@@ -17,9 +18,12 @@ public class DBServer {
     private static final char END_OF_TRANSMISSION = 4;
     private String storageFolderPath;
 
-    private List<Database> allDatabases;
-    private List<Table> allTables;
+    private List<Database> allDatabases = new ArrayList<Database>();
+    private List<Table> allTables = new ArrayList<Table>();
     private String currentDatabase;
+
+    private List<String> tableForPrinting = new ArrayList<String>();
+    private String errorLine;
 
     public static void main(String args[]) throws IOException {
         DBServer server = new DBServer();
@@ -46,7 +50,7 @@ public class DBServer {
     *
     * <p>This method handles all incoming DB commands and carries out the required actions.
     */
-    public String handleCommand(String command) {
+    public String handleCommand(String command) throws IOException {
         // TODO implement your server logic here
 
         // receive query -> turn into string
@@ -60,10 +64,45 @@ public class DBServer {
         List<String> tokens = queryLexer.getTokens();
 
         QueryParser parser = new QueryParser();
-        parser.parseQuery(tokens, this); // is this allowed
+        printToTerminal(parser.parseQuery(tokens, this));
 
 
         return "";
+    }
+
+    public void printToTerminal(boolean parserReturnValue) {
+        if (parserReturnValue) {
+            // is this allowed
+            // print [OK]
+            System.out.println("[OK]");
+            // print table if needed
+            if (tableForPrinting != null) {
+                for (String row : tableForPrinting) {
+                    //each row needs to have been converted in respective methods
+                    System.out.println(row);
+                }
+            }
+
+        } else {
+            // print [Error] followed by error message
+            System.out.println("[ERROR]: " + errorLine);
+        }
+    }
+
+    public void addTable(Table table) {
+        allTables.add(table);
+    }
+
+    public void removeTable(String tableName) {
+        allTables.removeIf(table -> table.getTableName().equals(tableName));
+    }
+
+    public void addDatabase(Database database) {
+        allDatabases.add(database);
+    }
+
+    public void removeDatabase(String databaseName) {
+        allDatabases.removeIf(database -> database.getDatabaseName().equals(databaseName));
     }
 
     public String getStorageFolderPath() {
@@ -82,11 +121,15 @@ public class DBServer {
        Table toBeReturned = null;
 
         for (Table currentTable: this.allTables) {
-           if (currentTable.getTableName().equals(tableName)) {
+           if (currentTable.getTableName().equals(tableName + ".tab")) {
                toBeReturned = currentTable;
            }
        }
         return toBeReturned;
+    }
+
+    public void setErrorLine(String error) {
+        this.errorLine = error;
     }
 
     //  === Methods below handle networking aspects of the project - you will not need to change these ! ===

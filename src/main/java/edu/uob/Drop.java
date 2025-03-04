@@ -9,11 +9,11 @@ public class Drop {
         Drop drop = new Drop();
 
         String folderPath = Paths.get("databases").toAbsolutePath().toString() + File.separator + "datatwo" + File.separator + "newtablefour.tab";
-        drop.dropFile(folderPath);
+//        drop.dropFile(folderPath);
 
     }
 
-    public void dropFile(String filePath) throws IOException {
+    public void dropFile(String filePath, DBServer server) throws IOException {
 //  public void dropFile(String directoryPath, File file) throws IOException {
 
         File file = new File(filePath);
@@ -23,7 +23,10 @@ public class Drop {
         }
 
         if(file.isDirectory()) {
-            file = clearDirectory(file);
+            file = clearDirectory(file, server);
+            server.removeDatabase(file.getName());
+        } else {
+            server.removeTable(file.getName());
         }
 
         quickDrop(file);
@@ -36,7 +39,7 @@ public class Drop {
         }
     }
 
-    public File clearDirectory(File directory) throws IOException {
+    public File clearDirectory(File directory, DBServer server) throws IOException {
         File[] fileList = directory.listFiles();
 
         if (fileList == null) {
@@ -48,7 +51,7 @@ public class Drop {
 
         if (fileList.length > 0) {
             for (File f : fileList) {
-                dropFile(f.getAbsolutePath());
+                dropFile(f.getAbsolutePath(), server);
             }
         }
         return directory;

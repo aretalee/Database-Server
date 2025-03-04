@@ -55,7 +55,7 @@ public class Create {
         return newFile;
     }
 
-    public Table createTable(String filePath, String fileName, List<String> attributeList) throws IOException {
+    public Table createTable(String filePath, String fileName, List<String> attributeList, DBServer server) throws IOException {
         // same as CREATE
 
         // make sure database exists!!!! (error handling)
@@ -75,6 +75,7 @@ public class Create {
         }
         // add column headings to file
         Table newTable = new Table(newFile, attributeList);
+        server.addTable(newTable);
         newTable.saveToFile(newFile);
 
         return newTable;

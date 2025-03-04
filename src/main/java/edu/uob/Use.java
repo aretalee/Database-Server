@@ -15,15 +15,15 @@ public class Use {
         System.out.println(currentDB.getName());
 
         Use use = new Use();
-        Database switchedDB = use.switchDatabases(folderPath, "dataone");
-        System.out.println(switchedDB.getDatabaseName());
-
-        switchedDB = use.switchDatabases(folderPath, "datatwo");
-        System.out.println(switchedDB.getDatabaseName());
+//        Database switchedDB = use.switchDatabases(folderPath, "dataone");
+//        System.out.println(switchedDB.getDatabaseName());
+//
+//        switchedDB = use.switchDatabases(folderPath, "datatwo");
+//        System.out.println(switchedDB.getDatabaseName());
 
     }
 
-    public Database switchDatabases(String databasesPath, String databaseName) throws IOException {
+    public Database switchDatabases(String databasesPath, String databaseName, DBServer server) throws IOException {
         // same as USE
 
         // need to check if this works
@@ -44,7 +44,10 @@ public class Use {
             }
         }
 
-        return new Database(requestedDatabase);
+        Database newDatabase = new Database(requestedDatabase);
+        server.addDatabase(newDatabase);
+
+        return newDatabase;
         // should Database instance be created here or in CREATE
         // can then be saved as currentDatabase in class that called this
     }

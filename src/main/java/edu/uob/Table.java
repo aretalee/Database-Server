@@ -16,7 +16,7 @@ public class Table {
     private File tableFile;
     private String tableName;
     // File object or use file path?
-    private static int ID = 0;
+    private static int ID = 1;
 
     // if creating new file: call CREATE, then make new Table + feed in File from CREATE method
     // if existing file: make new Table + feed in file (using new File(file path) ?), then call load data method
