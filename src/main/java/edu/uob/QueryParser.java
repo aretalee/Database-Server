@@ -348,6 +348,9 @@ public class QueryParser {
 
         // maybe need to use recursive descent
 
+        // need to keep precedence (evaluate everything in brackets first)
+        // if no brackets or within a pair of brackets -> left to right
+
         List<String> conditions = new ArrayList<String>();
 
         for (int i = startIndex; i < query.size(); i++) {

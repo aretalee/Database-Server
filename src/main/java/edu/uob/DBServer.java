@@ -64,29 +64,33 @@ public class DBServer {
         List<String> tokens = queryLexer.getTokens();
 
         QueryParser parser = new QueryParser();
-        printToTerminal(parser.parseQuery(tokens, this));
+        return returnStatement(parser.parseQuery(tokens, this));
 
 
-        return "";
+//        return "";
     }
 
-    public void printToTerminal(boolean parserReturnValue) {
+    public String returnStatement(boolean parserReturnValue) {
+        String returnStatement = "";
         if (parserReturnValue) {
             // is this allowed
             // print [OK]
-            System.out.println("[OK]");
+            returnStatement += "[OK]";
             // print table if needed
             if (tableForPrinting != null) {
                 for (String row : tableForPrinting) {
                     //each row needs to have been converted in respective methods
-                    System.out.println(row);
+//                    System.out.println(row);
+                    returnStatement += row;
                 }
             }
 
         } else {
             // print [Error] followed by error message
-            System.out.println("[ERROR]: " + errorLine);
+//            System.out.println("[ERROR]: " + errorLine);
+            returnStatement =  ("[ERROR]: " + errorLine);
         }
+        return returnStatement;
     }
 
     public void addTable(Table table) {
