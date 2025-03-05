@@ -23,6 +23,7 @@ public class DBServer {
     private String currentDatabase;
 
     private List<String> tableForPrinting = new ArrayList<String>();
+    private boolean printTable = false;
     private String errorLine;
 
     public static void main(String args[]) throws IOException {
@@ -59,6 +60,13 @@ public class DBServer {
         // give response [OK]/[ERROR]
         // print table content in here (if needed)
 
+        for (Database database : allDatabases) {
+            System.out.println(database.getDatabaseName());
+        }
+        for (Table table : allTables) {
+            System.out.println(table.getTableName());
+        }
+
         QueryLexer queryLexer = new QueryLexer(command);
         queryLexer.setup();
         List<String> tokens = queryLexer.getTokens();
@@ -77,12 +85,13 @@ public class DBServer {
             // print [OK]
             returnStatement += "[OK]";
             // print table if needed
-            if (tableForPrinting != null) {
+            if (tableForPrinting != null && printTable) {
                 for (String row : tableForPrinting) {
                     //each row needs to have been converted in respective methods
 //                    System.out.println(row);
                     returnStatement += row;
                 }
+                printTable = false;
             }
 
         } else {
@@ -133,11 +142,19 @@ public class DBServer {
        Table toBeReturned = null;
 
         for (Table currentTable: this.allTables) {
-           if (currentTable.getTableName().equals(tableName + ".tab")) {
+           if (currentTable.getTableName().equalsIgnoreCase(tableName + ".tab")) {
                toBeReturned = currentTable;
            }
        }
         return toBeReturned;
+    }
+
+    public void setTableForPrinting(List<String> tableForPrinting) {
+        this.tableForPrinting = tableForPrinting;
+    }
+
+    public void setPrintBoolean(boolean printTable) {
+        this.printTable = printTable;
     }
 
     public void setErrorLine(String error) {

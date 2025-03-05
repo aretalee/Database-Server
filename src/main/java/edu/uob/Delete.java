@@ -11,7 +11,7 @@ import java.util.List;
 public class Delete {
     // must call Comparer.java method before this to unsure conditions have already been checked
 
-    public void deleteRecord(Table chosenTable) throws IOException {
+    public void deleteRecord(Table chosenTable, List<List<String>> conditionList) throws IOException {
 
         int currentIndex = 0;
         for(List<String> row : chosenTable.accessTable()) {

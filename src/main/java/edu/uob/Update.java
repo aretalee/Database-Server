@@ -12,7 +12,7 @@ public class Update {
 
     // must call Comparer.java method before this to unsure conditions have already been checked
 
-    public void updateTable(Table chosenTable, List<String> nameValueList) throws IOException {
+    public void updateTable(Table chosenTable, List<String> nameValueList, List<List<String>> conditionList) throws IOException {
 
         int attributeIndex = 0;
         int valueIndex = 1;

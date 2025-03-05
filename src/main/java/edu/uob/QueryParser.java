@@ -17,6 +17,8 @@ import java.util.List;
 
 // error handling needs to be refined!!!!!!
 
+// check if names should be turned to lowercase!!!!!!
+
 
 public class QueryParser {
 
@@ -64,7 +66,7 @@ public class QueryParser {
             return false;
         }
 
-        String databaseName = query.get(1);
+        String databaseName = query.get(1).toLowerCase();
         server.setCurrentDatabase(databaseName);
         Use use = new Use();
         use.switchDatabases(server.getStorageFolderPath(), databaseName, server);
@@ -81,14 +83,14 @@ public class QueryParser {
                 || (query.get(1).equalsIgnoreCase("database") && query.size() != 4)
                 || (query.get(1).equalsIgnoreCase("table") && query.size() < 4)
                 || !checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))) {
-            server.setErrorLine("Invalid query.");
+            server.setErrorLine("Invalid query one.");
             return false;
         }
-        String fileName = query.get(2);
+        String fileName = query.get(2).toLowerCase();
 
         if (query.size() > 4) {
             if (!query.get(3).equalsIgnoreCase("(")) {
-                server.setErrorLine("Invalid query.");
+                server.setErrorLine("Invalid query two.");
                 return false;
             }
             int index = 4;
@@ -96,7 +98,7 @@ public class QueryParser {
             attributeList = addToList(attributeList, query, index, "AttributeList");
             if (!query.get(query.size() - 2).equalsIgnoreCase(")")
                     || !isListValid(attributeList, "AttributeList")) {
-                server.setErrorLine("Invalid query.");
+                server.setErrorLine("Invalid query three.");
                 return false;
             }
         }
@@ -145,7 +147,7 @@ public class QueryParser {
             return false;
         }
 
-        String tableName = query.get(2);
+        String tableName = query.get(2).toLowerCase();
         String alterationType = query.get(3);
         String attributeName = query.get(4);
 
@@ -164,7 +166,7 @@ public class QueryParser {
             return false;
         }
 
-        String tableName = query.get(2);
+        String tableName = query.get(2).toLowerCase().toLowerCase();
 
         List<String> valueList = new ArrayList<String>();
         int index = 5;
@@ -179,6 +181,21 @@ public class QueryParser {
         insert.insertIntoTable(server.getTable(tableName), valueList);
 
         return true;
+    }
+
+    public static void main(String args[]) throws IOException {
+        String query = "SELECT height FROM marks WHERE name == 'Chris' and age > 18 OR height < 190";
+
+        QueryLexer lexer = new QueryLexer(query);
+        lexer.setup();
+        ArrayList<String> queries = lexer.getTokens();
+
+//        System.out.println(queries);
+
+        QueryParser parser = new QueryParser();
+        DBServer server = new DBServer();
+        parser.parseSelect(server, queries);
+
     }
 
     public boolean parseSelect(DBServer server, List<String> query) throws IOException {
@@ -197,27 +214,27 @@ public class QueryParser {
                 || !checkAlphaNumeric(query.get(index + 1))
                 || isThereReservedWord(query.get(index + 1))
                 || !isListValid(wildAttributeList, "WildAttributeList")) {
-            server.setErrorLine("Invalid query.");
+            server.setErrorLine("Invalid query one.");
             return false;
         }
 
         index++;
 
-        String tableName = query.get(index);
+        String tableName = query.get(index).toLowerCase();
         index++;
 
-        if ((query.size() - 2) != (index)) {
-            // query.size() - 2 cause minus ";" and [tablename] to et to where index should be when list = *
+        List<List<String>> conditionList = new ArrayList<>();
+        if ((query.size() - 1) != (index)) {
+            // query.size() - 1 to get to where index should be when list = *
             if (!query.get(index).equalsIgnoreCase("where")) {
-                server.setErrorLine("Invalid query.");
+                server.setErrorLine((query.size() - 2) + " " + index + " " + "Invalid query two.");
                 return false;
             }
-            List<List<String>> conditionList = new ArrayList<>();
             parseCondition(server, query, index + 1, conditionList);
         }
 
         Select select = new Select();
-        select.selectRecords(server.getTable(tableName), wildAttributeList);
+        select.selectRecords(server, server.getTable(tableName), wildAttributeList, conditionList);
 
         return true;
     }
@@ -230,7 +247,7 @@ public class QueryParser {
             return false;
         }
 
-        String tableName = query.get(2);
+        String tableName = query.get(2).toLowerCase();
 
         List<String> nameValueList = new ArrayList<String>();
         int index = 3;
@@ -250,7 +267,7 @@ public class QueryParser {
         parseCondition(server, query, index, conditionList);
 
         Update update = new Update();
-        update.updateTable(server.getTable(tableName), nameValueList);
+        update.updateTable(server.getTable(tableName), nameValueList, conditionList);
 
 
         return true;
@@ -265,14 +282,14 @@ public class QueryParser {
             return false;
         }
 
-        String tableName = query.get(2);
+        String tableName = query.get(2).toLowerCase();
 
         List<List<String>> conditionList = new ArrayList<>();
         parseCondition(server, query, 4, conditionList);
 
 
         Delete delete = new Delete();
-        delete.deleteRecord(server.getTable(tableName));
+        delete.deleteRecord(server.getTable(tableName), conditionList);
 
         return true;
     }
@@ -290,8 +307,8 @@ public class QueryParser {
             return false;
         }
 
-        String fileNameOne = query.get(1);
-        String fileNameTwo = query.get(3);
+        String fileNameOne = query.get(1).toLowerCase();
+        String fileNameTwo = query.get(3).toLowerCase();
 
         String attributeNameOne = query.get(5);
         String attributeNameTwo = query.get(7);
@@ -300,30 +317,6 @@ public class QueryParser {
 
 
         return true;
-    }
-
-    public static void main(String args[]) throws IOException {
-        String query = "n == 5 AND p > 10 OR ((q == 3 OR t <= 6) AND x != 11)";
-//        String query = "n == 5 AND p > 10 OR (q == 3 OR (t <= 6 AND x != 11))";
-
-        QueryLexer lexer = new QueryLexer(query);
-        lexer.setup();
-        ArrayList<String> queries = lexer.getTokens();
-
-        System.out.println(queries);
-
-        QueryParser parser = new QueryParser();
-        DBServer server = new DBServer();
-        List<List<String>> conditionList = new ArrayList<>();
-        if (parser.parseCondition(server, queries, 0, conditionList)) {
-
-            for (List<String> condition : conditionList) {
-                System.out.println(condition);
-            }
-        } else {
-            System.out.println("Invalid query.");
-        }
-
     }
 
     public boolean parseCondition(DBServer server, List<String> query, int startIndex, List<List<String>> conditionList) {
@@ -358,7 +351,7 @@ public class QueryParser {
                 server.setErrorLine("Invalid query.");
                 return false;
             }
-            if (!currentToken.equals("(") && !currentToken.equals(" ")) {
+            if (!currentToken.equals("(") && !currentToken.equals(";") && !currentToken.equals(" ")) {
                 precedence.add(currentToken);
             }
             query.set(i, " ");
