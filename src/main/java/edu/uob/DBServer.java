@@ -93,6 +93,14 @@ public class DBServer {
         return returnStatement;
     }
 
+    public List<Table> getAllTables() {
+        return this.allTables;
+    }
+
+    public List<Database> getAllDatabases() {
+        return this.allDatabases;
+    }
+
     public void addTable(Table table) {
         allTables.add(table);
     }

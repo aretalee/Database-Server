@@ -9,30 +9,6 @@ public class Create {
 
     private File newFile;
 
-    public static void main(String args[]) throws IOException {
-        String folderPath = Paths.get("databases").toAbsolutePath().toString();
-
-        Create create = new Create();
-        File newDatabase = create.createDatabase(folderPath, "DataOne");
-
-//        String folderPath = Paths.get("databases").toAbsolutePath().toString() + File.separator + "datatwo";
-//
-//        List<String> attributeList = new ArrayList<String>();
-//        attributeList.add("name");
-//        attributeList.add("description");
-//        attributeList.add("type");
-//
-//        Create create = new Create();
-//        Table newTable = create.createTable(folderPath, "NewTableFour", attributeList);
-//        System.out.println(newTable.getTableName());
-//
-//        List<String> list = newTable.accessColumnHeaders();
-//        for (String header : list) {
-//            System.out.println(header);
-//        }
-    }
-
-
     public File createDatabase(String filePath, String fileName) throws IOException {
         // same as CREATE
 

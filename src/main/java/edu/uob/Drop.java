@@ -5,16 +5,7 @@ import java.nio.file.Paths;
 
 public class Drop {
 
-    public static void main(String args[]) throws IOException {
-        Drop drop = new Drop();
-
-        String folderPath = Paths.get("databases").toAbsolutePath().toString() + File.separator + "datatwo" + File.separator + "newtablefour.tab";
-//        drop.dropFile(folderPath);
-
-    }
-
     public void dropFile(String filePath, DBServer server) throws IOException {
-//  public void dropFile(String directoryPath, File file) throws IOException {
 
         File file = new File(filePath);
 
@@ -45,14 +36,9 @@ public class Drop {
         if (fileList == null) {
             throw new NullPointerException("allDatabases");
         }
-//        else if (fileList.length == 0) {
-//            throw new IOException("databases is already empty");
-//        }
 
-        if (fileList.length > 0) {
-            for (File f : fileList) {
-                dropFile(f.getAbsolutePath(), server);
-            }
+        for (File f : fileList) {
+            dropFile(f.getAbsolutePath(), server);
         }
         return directory;
     }

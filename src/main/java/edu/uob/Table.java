@@ -21,9 +21,6 @@ public class Table {
     // if creating new file: call CREATE, then make new Table + feed in File from CREATE method
     // if existing file: make new Table + feed in file (using new File(file path) ?), then call load data method
     public Table(File newTableFile, List<String> attributeList) throws IOException {
-        // determine how to create instance of this class
-
-        // read in and parse data from table file
 
         tableList = new ArrayList<List<String>>();
         columnHeaders = new ArrayList<String>();
@@ -33,22 +30,6 @@ public class Table {
         tableFile = newTableFile;
         tableName = tableFile.getName();
 
-    }
-
-    public static void main(String args[]) throws IOException {
-        String filePath = File.separator + "Users" + File.separator + "areta_lee" + File.separator + "Desktop" + File.separator + "sheds.tab";
-        File file = new File(filePath);
-        List<String> attributeList = new ArrayList<String>();
-
-        Table table = new Table(file, attributeList);
-        table.loadTableData();
-
-        System.out.println(table.getTableName());
-        System.out.println(table.accessColumnHeaders());
-
-        for (List<String> row : table.tableList) {
-            System.out.println(row);
-        }
     }
 
     public String getTableName() {

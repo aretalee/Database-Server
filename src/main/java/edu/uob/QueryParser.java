@@ -1,5 +1,6 @@
 package edu.uob;
 
+import javax.management.Query;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,79 +15,45 @@ import java.util.List;
 // try to trim down repeated code
 // also try to make it more compact (maybe less if-statements?)
 
-// think of way to implement parsing for conditions
-// may factor out adding to files as a general method e.g. the below
-//        List<String> queryType = new ArrayList<String>();
-//        queryType = (query.get(0));
-//        queryType = (queryType);
-
-// all places with something = null --> error handling needs to be added!!!!!!
+// error handling needs to be refined!!!!!!
 
 
 public class QueryParser {
-
-    List<List<String>> queryTerms;
 
     String[] reservedWords = {"use", "create", "drop", "alter", "insert", "select", "update", "delete", "join"
                               , "database", "table", "into", "values", "from", "where", "set", "and", "or"
                               , "add", "true", "false", "null"};
 
-    // all parsers with loops inside timeout :(
-
-    public static void main(String[] args) throws IOException {
-
-        String newQuery = "INSERT INTO marks VALUES ('Simon', 65, TRUE);";
-        QueryLexer lexer = new QueryLexer(newQuery);
-        lexer.setup();
-        ArrayList<String> tokens = lexer.getTokens();
-
-        QueryParser parser = new QueryParser();
-        DBServer server = new DBServer();
-        Boolean parsedQuery = parser.parseQuery(tokens, server);
-
-        System.out.println(parsedQuery);
-
-    }
-
-    // function of query depends on 1st word in ArrayList<String>
-    // USE vs SELECT vs CREATE etc.
-
-
     public boolean parseQuery(List<String> query, DBServer server) throws IOException {
 
-        // if return null -> invalid query
-
-//        String queryType = new ArrayList<List<String>>();
+        boolean queryValid;
 
         if (!isThereSemicolon(query.get(query.size() - 1))) {
             server.setErrorLine("Missing semicolon at end of query.");
-            return false;
+            queryValid = false;
+            return queryValid;
         }
-
-        String queryType = query.get(0);
-
 
         // need to make this less complex...
 
         switch (query.get(0).toLowerCase()) {
-            case "use" -> parseUse(server, query);
-            case "create" -> parseCreate(server, query);
-            case "drop" -> parseDrop(server, query);
-            case "alter" -> parseAlter(server, query);
-            case "insert" -> parseInsert(server, query);
-            case "select" -> parseSelect(server, query);
-            case "update" -> parseUpdate(server, query);
-            case "delete" -> parseDelete(server, query);
-            case "join" -> parseJoin(server, query);
+            case "use" ->  queryValid =  parseUse(server, query);
+            case "create" ->  queryValid =  parseCreate(server, query);
+            case "drop" ->  queryValid =  parseDrop(server, query);
+            case "alter" ->  queryValid =  parseAlter(server, query);
+            case "insert" ->  queryValid =  parseInsert(server, query);
+            case "select" ->  queryValid =  parseSelect(server, query);
+            case "update" ->  queryValid =  parseUpdate(server, query);
+            case "delete" ->  queryValid =  parseDelete(server, query);
+            case "join" ->  queryValid =  parseJoin(server, query);
             default -> {
                 server.setErrorLine("First word is not a valid query type.");
-                return false;
+                queryValid =  false;
             }
 
         }
 
-//        return queryTerms;
-        return true;
+        return queryValid;
     }
 
     public boolean parseUse(DBServer server, List<String> query) throws IOException {
@@ -102,7 +69,6 @@ public class QueryParser {
         Use use = new Use();
         use.switchDatabases(server.getStorageFolderPath(), databaseName, server);
 
-//        return queryType;
         return true;
     }
 
@@ -134,9 +100,6 @@ public class QueryParser {
                 return false;
             }
         }
-//            else {
-//                return null;
-//            }
 
         Create create = new Create();
         if (query.get(1).equalsIgnoreCase("database")) {
@@ -145,7 +108,6 @@ public class QueryParser {
             String databasePath = server.getStorageFolderPath() + File.separator + server.getCurrentDatabase();
             create.createTable(databasePath,  fileName, attributeList, server);
         }
-//        return queryType;
         return true;
     }
 
@@ -158,21 +120,18 @@ public class QueryParser {
             return false;
         }
 
-        String fileName = query.get(2);
+        String fileName = query.get(2).toLowerCase();
 
         Drop drop = new Drop();
+        String filePath;
         if (query.get(1).equalsIgnoreCase("database")) {
-            String filePath = server.getStorageFolderPath() + File.separator + fileName;
-            drop.dropFile(filePath, server);
+            filePath = server.getStorageFolderPath() + File.separator + fileName;
         } else {
-            String filePath = server.getStorageFolderPath() + File.separator + server.getStorageFolderPath() + File.separator + fileName;
-            drop.dropFile(filePath, server);
+            filePath = server.getStorageFolderPath() + File.separator + server.getCurrentDatabase() + File.separator + fileName + ".tab";
             // does DROP TABLE only work in specified database? or is it able to drop table in another one
         }
-        String filePath = server.getStorageFolderPath() + File.separator + server.getCurrentDatabase();
+        drop.dropFile(filePath, server);
 
-
-//        return queryType;
         return true;
     }
 
@@ -193,7 +152,6 @@ public class QueryParser {
         Alter alter = new Alter();
         alter.alterTable(server.getTable(tableName), alterationType, attributeName);
 
-//        return queryType;
         return true;
     }
 
@@ -220,7 +178,6 @@ public class QueryParser {
         Insert insert = new Insert();
         insert.insertIntoTable(server.getTable(tableName), valueList);
 
-//        return queryType;
         return true;
     }
 
@@ -255,13 +212,13 @@ public class QueryParser {
                 server.setErrorLine("Invalid query.");
                 return false;
             }
-            parseCondition(server, query, index + 1);
+            List<List<String>> conditionList = new ArrayList<>();
+            parseCondition(server, query, index + 1, conditionList);
         }
 
         Select select = new Select();
         select.selectRecords(server.getTable(tableName), wildAttributeList);
 
-//        return queryType;
         return true;
     }
 
@@ -288,13 +245,14 @@ public class QueryParser {
 
 
         index++;
-        parseCondition(server, query, index);
+
+        List<List<String>> conditionList = new ArrayList<>();
+        parseCondition(server, query, index, conditionList);
 
         Update update = new Update();
         update.updateTable(server.getTable(tableName), nameValueList);
 
 
-//        return queryType;
         return true;
     }
 
@@ -309,16 +267,17 @@ public class QueryParser {
 
         String tableName = query.get(2);
 
-        parseCondition(server, query, 4);
+        List<List<String>> conditionList = new ArrayList<>();
+        parseCondition(server, query, 4, conditionList);
+
 
         Delete delete = new Delete();
         delete.deleteRecord(server.getTable(tableName));
 
-//        return queryType;
         return true;
     }
 
-    public boolean parseJoin(DBServer server, List<String> query) throws IOException {
+    public boolean parseJoin(DBServer server, List<String> query) {
 
         if (query.size() != 9 || !checkAlphaNumeric(query.get(1))
                 || !query.get(2).equalsIgnoreCase("and")
@@ -340,31 +299,84 @@ public class QueryParser {
         Join join = new Join();
 
 
-//        return queryType;
         return true;
     }
 
-    public boolean parseCondition(DBServer server, List<String> query, int startIndex) throws IOException {
+    public static void main(String args[]) throws IOException {
+        String query = "n == 5 AND p > 10 OR ((q == 3 OR t <= 6) AND x != 11)";
+//        String query = "n == 5 AND p > 10 OR (q == 3 OR (t <= 6 AND x != 11))";
 
-        // maybe need to use recursive descent
+        QueryLexer lexer = new QueryLexer(query);
+        lexer.setup();
+        ArrayList<String> queries = lexer.getTokens();
 
-        // need to keep precedence (evaluate everything in brackets first)
-        // if no brackets or within a pair of brackets -> left to right
+        System.out.println(queries);
 
-        List<String> conditions = new ArrayList<String>();
+        QueryParser parser = new QueryParser();
+        DBServer server = new DBServer();
+        List<List<String>> conditionList = new ArrayList<>();
+        if (parser.parseCondition(server, queries, 0, conditionList)) {
 
+            for (List<String> condition : conditionList) {
+                System.out.println(condition);
+            }
+        } else {
+            System.out.println("Invalid query.");
+        }
+
+    }
+
+    public boolean parseCondition(DBServer server, List<String> query, int startIndex, List<List<String>> conditionList) {
+
+        String[] comparators = {"==", ">", "<", ">=", "<=", "!=", " LIKE "};
+
+        int lookAheadBy = 4;
+
+        List<String> precedence = new ArrayList<String>();
         for (int i = startIndex; i < query.size(); i++) {
-            if (! query.get(i).equals("(") && query.get(i).equals(")")
-                      ) {
+            String currentToken = query.get(i);
+            if (currentToken.equals(")")) {
+                query.set(i, " ");
+                break; // see if there is workaround (avoid using break if possible)
+            }
+            if (currentToken.equals("(")) {
+                        //&& (query.get(i + lookAheadBy).equalsIgnoreCase("and")
+                        //|| query.get(i + lookAheadBy).equalsIgnoreCase("or"))) {
+                    // need to generalise this
+                    // only work if there's one bracket
+                    // doesn't account for (( or ((( --> space between bracket and Bool > lookAhead
+                    // something OR (((this = 1 AND that = 2) OR what > 4) AND here < 6)
+
+                parseCondition(server, query, i + 1, conditionList);
+            }
+
+            // trim this down if possible!
+            if (!currentToken.equalsIgnoreCase("and") && !currentToken.equalsIgnoreCase("or")
+                        && (i != 0 && !isTokenComparator(query.get(i - 1), comparators)
+                        && !checkAlphaNumeric(currentToken) && isThereReservedWord(currentToken))
+                        && !isTokenComparator(currentToken, comparators)) {
                 server.setErrorLine("Invalid query.");
                 return false;
             }
-
+            if (!currentToken.equals("(") && !currentToken.equals(" ")) {
+                precedence.add(currentToken);
+            }
+            query.set(i, " ");
         }
 
-//        return queryType;
+        conditionList.add(precedence);
         return true;
     }
+
+    public boolean isTokenComparator(String token, String[] comparators) {
+        for (String comparator : comparators) {
+            if (comparator.equals(token)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public List<String> addToList(List<String> chosenList, List<String> query, int index, String listType) {
 

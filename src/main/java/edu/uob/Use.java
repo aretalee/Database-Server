@@ -8,25 +8,7 @@ import java.util.List;
 
 public class Use {
 
-    public static void main(String args[]) throws IOException {
-        String folderPath = Paths.get("databases").toAbsolutePath().toString();
-
-        File currentDB = new File(folderPath + File.separator + "datatwo");
-        System.out.println(currentDB.getName());
-
-        Use use = new Use();
-//        Database switchedDB = use.switchDatabases(folderPath, "dataone");
-//        System.out.println(switchedDB.getDatabaseName());
-//
-//        switchedDB = use.switchDatabases(folderPath, "datatwo");
-//        System.out.println(switchedDB.getDatabaseName());
-
-    }
-
     public Database switchDatabases(String databasesPath, String databaseName, DBServer server) throws IOException {
-        // same as USE
-
-        // need to check if this works
 
         File databases = new File(databasesPath);
         File[] allDatabases = databases.listFiles();
@@ -44,11 +26,36 @@ public class Use {
             }
         }
 
-        Database newDatabase = new Database(requestedDatabase);
-        server.addDatabase(newDatabase);
+
+        Database newDatabase = doesDatabaseExist(databaseName, server);
+
+        if (newDatabase == null) {
+            newDatabase = new Database(requestedDatabase);
+            server.addDatabase(newDatabase);
+        }
+
+        // need to handle cases where object already exists
+
+        // check if database exists by checking against list in Server class
+
+        // if it doesn't exist, make new database and return
 
         return newDatabase;
         // should Database instance be created here or in CREATE
         // can then be saved as currentDatabase in class that called this
+
     }
+
+    public Database doesDatabaseExist(String databaseName, DBServer server) throws IOException {
+
+        List<Database> databases = server.getAllDatabases();
+        for (Database database : databases) {
+            if(database.getDatabaseName().equals(databaseName)) {
+                return database;
+            }
+        }
+        return null;
+    }
+
+
 }
