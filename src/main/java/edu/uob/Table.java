@@ -1,10 +1,6 @@
 package edu.uob;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,20 +12,33 @@ public class Table {
     private File tableFile;
     private String tableName;
     // File object or use file path?
-    private static int ID = 1;
+    private int latestID;
 
     // if creating new file: call CREATE, then make new Table + feed in File from CREATE method
     // if existing file: make new Table + feed in file (using new File(file path) ?), then call load data method
+
+    // is there a way to format table so that this list isn't needed
+    // maybe move attributeList out of constructor?
     public Table(File newTableFile, List<String> attributeList) throws IOException {
 
         tableList = new ArrayList<List<String>>();
         columnHeaders = new ArrayList<String>();
-        columnHeaders.add("ID");
         columnHeaders.addAll(attributeList);
 
         tableFile = newTableFile;
         tableName = tableFile.getName();
+        setID();
 
+    }
+
+    public void setID() {
+        if (tableList.isEmpty()) {
+            this.latestID = 0;
+        } else {
+            List<String> lastRow = tableList.get(tableList.size() - 1);
+            String id = lastRow.get(0);
+            this.latestID = Integer.parseInt(id);
+        }
     }
 
     public String getTableName() {
@@ -45,17 +54,20 @@ public class Table {
     }
 
     public int getCurrentID() {
-        return ID++;
+        return ++latestID;
     }
 
     public File getTableFile() {
         return tableFile;
     }
 
+    // can this be combined with below saveToFile?
     public void loadTableData() throws IOException {
 
         try {
-            FileHandler.readFile(tableFile, this);
+            FileHandler fileHandler = new FileHandler();
+            fileHandler.readFile(tableFile, this);
+            setID();
         } catch (IOException e) {
             throw new IOException("File could not be read: " + tableFile.getAbsolutePath());
         }
@@ -66,7 +78,8 @@ public class Table {
     public void saveToFile(File file) throws IOException {
 
         try {
-            FileHandler.writeTableToFile(file, this);
+            FileHandler fileHandler = new FileHandler();
+            fileHandler.writeTableToFile(file, this);
         } catch (IOException e) {
             throw new IOException("File could not be saved: " + file.getAbsolutePath());
         }

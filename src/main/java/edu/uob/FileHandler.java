@@ -7,18 +7,7 @@ import java.util.List;
 
 public class FileHandler {
 
-    public FileHandler() {
-        // determine how to create instance of this class or if it's needed
-    }
-
-    public static void main(String args[]) throws IOException {
-//        String filePath = File.separator + "Users" + File.separator + "areta_lee" + File.separator + "Desktop" + File.separator + "people.tab";
-        String filePath = File.separator + "Users" + File.separator + "areta_lee" + File.separator + "Desktop" + File.separator + "sheds.tab";
-
-//        readFile(filePath);
-    }
-
-    public static void readFile(File file, Table currentTable) throws IOException {
+    public void readFile(File file, Table currentTable) throws IOException {
 
         try {
             FileReader fileReader = new FileReader(file);
@@ -35,7 +24,7 @@ public class FileHandler {
                         currentTable.accessColumnHeaders().add(item);
                     }
                 } else {
-                    ArrayList<String> thisRow = new ArrayList<>(Arrays.asList(splitLine));
+                    List<String> thisRow = new ArrayList<String>(Arrays.asList(splitLine));
                     currentTable.accessTable().add(thisRow);
                 }
                 lineCounter++;
@@ -53,7 +42,7 @@ public class FileHandler {
 
     // should file parser be in here? or new class
 
-    public static void writeTableToFile(File chosenFile, Table currentTable) throws IOException {
+    public void writeTableToFile(File chosenFile, Table currentTable) throws IOException {
 
         try {
             FileWriter fileWriter = new FileWriter(chosenFile);
@@ -84,55 +73,33 @@ public class FileHandler {
         // remember to add in try-catch block
     }
 
-//    public static void readFile(String fileName) throws IOException {
-//
-//        try {
-//            File tableFile = new File(fileName);
-//            FileReader fileReader = new FileReader(tableFile);
-//            BufferedReader bufferedReader = new BufferedReader(fileReader);
-//            // for buffered reader --> read all lines by checking if line is null
-//
-//            String currentLine;
-//            while((currentLine = bufferedReader.readLine()) != null) {
-//                System.out.println(currentLine);
-//            }
-//
-//            bufferedReader.close();
-//
-//        } catch (FileNotFoundException e){
-//            throw new FileNotFoundException(fileName);
-//        } catch (IOException e) {
-//            throw new IOException(fileName);
-//        }
-//
-//    }
+    public void populateWithExistingFiles(DBServer server) throws IOException {
+        File[] storageFolder = (new File(server.getStorageFolderPath())).listFiles();
 
-//    public static void writeTableToFile(String fileName, Table currentTable) throws IOException {
-//
-//        try {
-//            File tableFile = new File(fileName);
-//            FileWriter fileWriter = new FileWriter(tableFile);
-//            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-//            // for buffered reader --> read all lines by checking if line is null
-//
-//            List<List<String>> tableContent = currentTable.accessTable();
-//            for (List<String> row : tableContent) {
-//                bufferedWriter.write(String.join("\t", row));
-//                bufferedWriter.newLine();
-//            }
-//
-//            bufferedWriter.close();
-//
-//        } catch (FileNotFoundException e){
-//            throw new FileNotFoundException(fileName);
-//        } catch (IOException e) {
-//            throw new IOException(fileName);
-//        }
-//
-//        // remember to add in try-catch block
-//    }
+        if (storageFolder != null) {
+            for (File databaseFile : storageFolder) {
+                Database thisDatabase = new Database(databaseFile);
+                server.getAllDatabases().add(thisDatabase);
+                addTableObjects(server, thisDatabase.getDatabaseName());
+            }
+        }
 
 
+    }
 
+    public void addTableObjects(DBServer server, String databaseName) throws IOException {
+        String databasePath = server.getStorageFolderPath() + File.separator + databaseName;
+        File[] databaseFolder = (new File(databasePath)).listFiles();
+
+        if (databaseFolder != null) {
+            for (File tableFile : databaseFolder) {
+                List<String> attributeList = new ArrayList<String>();
+                Table thisTable = new Table(tableFile, attributeList);
+                thisTable.loadTableData();
+                server.getAllTables().add(thisTable);
+            }
+        }
+
+    }
 
 }

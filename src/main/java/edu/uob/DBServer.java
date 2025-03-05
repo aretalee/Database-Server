@@ -20,6 +20,7 @@ public class DBServer {
 
     private List<Database> allDatabases = new ArrayList<Database>();
     private List<Table> allTables = new ArrayList<Table>();
+    private boolean populateLists = true;
     private String currentDatabase;
 
     private List<String> tableForPrinting = new ArrayList<String>();
@@ -54,17 +55,12 @@ public class DBServer {
     public String handleCommand(String command) throws IOException {
         // TODO implement your server logic here
 
-        // receive query -> turn into string
-        // tokenise + parse query
-        // call corresponding operation
-        // give response [OK]/[ERROR]
-        // print table content in here (if needed)
-
-        for (Database database : allDatabases) {
-            System.out.println(database.getDatabaseName());
-        }
-        for (Table table : allTables) {
-            System.out.println(table.getTableName());
+        // only want to populate when server class is instantiated (?)
+        // records should remain until server closes
+        if (populateLists) {
+            FileHandler fileHandler = new FileHandler();
+            fileHandler.populateWithExistingFiles(this);
+            populateLists = false;
         }
 
         QueryLexer queryLexer = new QueryLexer(command);
@@ -81,14 +77,11 @@ public class DBServer {
     public String returnStatement(boolean parserReturnValue) {
         String returnStatement = "";
         if (parserReturnValue) {
-            // is this allowed
             // print [OK]
             returnStatement += "[OK]";
             // print table if needed
             if (tableForPrinting != null && printTable) {
                 for (String row : tableForPrinting) {
-                    //each row needs to have been converted in respective methods
-//                    System.out.println(row);
                     returnStatement += row;
                 }
                 printTable = false;
@@ -96,7 +89,6 @@ public class DBServer {
 
         } else {
             // print [Error] followed by error message
-//            System.out.println("[ERROR]: " + errorLine);
             returnStatement =  ("[ERROR]: " + errorLine);
         }
         return returnStatement;
@@ -115,6 +107,7 @@ public class DBServer {
     }
 
     public void removeTable(String tableName) {
+        // should I make it null first?
         allTables.removeIf(table -> table.getTableName().equals(tableName));
     }
 

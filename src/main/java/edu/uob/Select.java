@@ -1,53 +1,53 @@
 package edu.uob;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Select {
 
-    // must call WHERE.java method before this to unsure conditions have already been checked
-
     public void selectRecords(DBServer server, Table chosenTable, List<String> chosenHeaders, List<List<String>> conditionList) {
 
-        if(chosenHeaders.get(0).equals("*")) {
+        if (chosenHeaders.get(0).equals("*")) {
             // print all rows
             // assume table has already been filtered
 
-            List<String> allRows = formatOutputTable(chosenTable);
+            List<String> allRows = formatOutputTable(chosenTable.accessTable(), chosenTable.accessColumnHeaders());
             server.setTableForPrinting(allRows);
             server.setPrintBoolean(true);
 
         } else {
+            List<Integer> headerIndexes = new ArrayList<Integer>();
+            List<List<String>> toBePrinted = new ArrayList<List<String>>();
+
             for (String header : chosenHeaders) {
-//                System.out.println(header);
-                int chosenIndex = ColumnIndexFinder.findColumnIndex(chosenTable, header);
+                headerIndexes.add(ColumnIndexFinder.findColumnIndex(chosenTable, header));
+            }
 
-                if(chosenIndex != -1) { // remove magic number later
-                    for(List<String> row : chosenTable.accessTable()) {
-                        // assume table has already been filtered
+            for (List<String> row : chosenTable.accessTable()) {
+                // assume table has already been filtered
+                List<String> rowValues = new ArrayList<String>();
 
-                        // print to terminal
-                        // probably need to be returned by handleCommand
-
+                for (int currentIndex : headerIndexes) {
+                    if (currentIndex != -1) {
+                        rowValues.add(row.get(currentIndex));
                     }
+                }
+                toBePrinted.add(rowValues);
             }
-
-
-            }
+            List<String> selectedRows = formatOutputTable(toBePrinted, chosenHeaders);
+            server.setTableForPrinting(selectedRows);
+            server.setPrintBoolean(true);
         }
-
         // save back to filesystem
 //        chosenTable.saveToFile(chosenTable.getTableFile());
-
     }
 
-    public List<String> formatOutputTable(Table table) {
+
+    public List<String> formatOutputTable(List<List<String>> tableList, List<String> headers) {
 
         List<String> chosenRows = new ArrayList<String>();
-        List<List<String>> tableList = table.accessTable();
 
-        chosenRows.add("\n" + String.join("\t", table.accessColumnHeaders()) + "\n");
+        chosenRows.add("\n" + String.join("\t", headers) + "\n");
 
         for (List<String> row : tableList) {
             chosenRows.add(String.join("\t", row) + "\n");

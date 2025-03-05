@@ -78,6 +78,7 @@ public class QueryParser {
 
         // need to simplify this...
         List<String> attributeList = new ArrayList<String>();
+        attributeList.add("id");
 
         if ((!query.get(1).equalsIgnoreCase("database") && !query.get(1).equalsIgnoreCase("table"))
                 || (query.get(1).equalsIgnoreCase("database") && query.size() != 4)
@@ -209,7 +210,8 @@ public class QueryParser {
             wildAttributeList = addToList(wildAttributeList, query, index, "WildAttributeList");
         }
 
-        index = wildAttributeList.size() + index;
+        int numberOfCommas = wildAttributeList.size() - 1;
+        index = wildAttributeList.size() + index + numberOfCommas;
         if (!query.get(index).equalsIgnoreCase("from")
                 || !checkAlphaNumeric(query.get(index + 1))
                 || isThereReservedWord(query.get(index + 1))

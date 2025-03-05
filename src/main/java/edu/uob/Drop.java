@@ -9,12 +9,13 @@ public class Drop {
 
         File file = new File(filePath);
 
-        if(!file.exists()) {
+        if (!file.exists()) {
             throw new FileNotFoundException(file.getAbsolutePath());
         }
 
-        if(file.isDirectory()) {
+        if (file.isDirectory()) {
             file = clearDirectory(file, server);
+
             server.removeDatabase(file.getName());
         } else {
             server.removeTable(file.getName());
@@ -25,7 +26,7 @@ public class Drop {
     }
 
     public void quickDrop(File uneededFile) throws IOException {
-        if(!uneededFile.delete()) {
+        if (!uneededFile.delete()) {
             throw new IOException("Could not delete file " + uneededFile.getAbsolutePath());
         }
     }
