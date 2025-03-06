@@ -7,15 +7,15 @@ public class Select {
 
     private boolean printAllRows = false;
 
-    public void setPrintAllRows(boolean printAllRows) {
-        this.printAllRows = printAllRows;
-    }
-
     public void selectRecords(DBServer server, Table chosenTable, List<String> chosenHeaders, List<List<String>> conditionList) {
 
-        ConditionHandler conditionHandler = new ConditionHandler();
-        List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList, this);
 
+        ConditionHandler conditionHandler = new ConditionHandler();
+        List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList);
+
+        if (conditionHandler.isConditionListEmpty(conditionList)) {
+            printAllRows = true;
+        }
 
         if (chosenHeaders.get(0).equals("*")) {
             List<String> allColumns = formatOutputTable(chosenTable.accessTable(), chosenTable.accessColumnHeaders(), rowsToSelect);

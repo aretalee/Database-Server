@@ -13,11 +13,19 @@ public class Delete {
 
     public void deleteRecord(Table chosenTable, List<List<String>> conditionList) throws IOException {
 
-        int currentIndex = 0;
-        for(List<String> row : chosenTable.accessTable()) {
-                // assume table has already been filtered
-            row.remove(currentIndex);
-            currentIndex++;
+        ConditionHandler conditionHandler = new ConditionHandler();
+        List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList);
+        List<List<String>> tableList = chosenTable.accessTable();
+
+        if (!rowsToDelete.isEmpty()) {
+            List<List<String>> deleteObjects = new ArrayList<List<String>>();
+            for (Integer index : rowsToDelete) {
+                List<String> row = tableList.get(index);
+                deleteObjects.add(row);
+            }
+            for (List<String> row : deleteObjects) {
+                tableList.remove(row);
+            }
         }
 
         // save back to filesystem

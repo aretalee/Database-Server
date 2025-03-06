@@ -263,8 +263,7 @@ public class QueryParser {
     public boolean parseDelete(DBServer server, List<String> query) throws IOException {
 
         if (!query.get(1).equalsIgnoreCase(("from")) || !checkAlphaNumeric(query.get(2))
-                || isThereReservedWord(query.get(2)) || !query.get(4).equalsIgnoreCase(("where"))
-                ||!query.get(3).equalsIgnoreCase(("values")) || !query.get(4).equalsIgnoreCase("(")) {
+                || isThereReservedWord(query.get(2)) || !query.get(3).equalsIgnoreCase("where")) {
             server.setErrorLine("Invalid query.");
             return false;
         }

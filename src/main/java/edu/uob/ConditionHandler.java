@@ -5,10 +5,9 @@ import java.util.List;
 
 public class ConditionHandler {
 
-    public List<Integer> filterTable(Table chosenTable, List<List<String>> conditions, Select selector) {
+    public List<Integer> filterTable(Table chosenTable, List<List<String>> conditions) {
 
         if (isConditionListEmpty(conditions)) {
-            selector.setPrintAllRows(true);
             return null;
         }
 
@@ -25,7 +24,6 @@ public class ConditionHandler {
         }
 
         if (conditions.get(1).isEmpty()) {
-            System.out.println(comparisonResults);
             return comparisonResults.get(0);
         } else {
             return combineResults(comparisonResults, conditions.get(1));

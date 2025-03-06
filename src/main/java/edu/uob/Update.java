@@ -31,8 +31,6 @@ public class Update {
         }
 
 
-
-
         // save back to filesystem
         chosenTable.saveToFile(chosenTable.getTableFile());
 
