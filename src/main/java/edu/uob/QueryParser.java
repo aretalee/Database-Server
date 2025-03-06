@@ -231,19 +231,19 @@ public class QueryParser {
             return false;
         }
 
-        String tableName = query.get(2).toLowerCase();
+        String tableName = query.get(1).toLowerCase();
 
         List<String> nameValueList = new ArrayList<String>();
         int index = 3;
         nameValueList = addToList(nameValueList, query, index, "where");
 
-        index = nameValueList.size() + index;
+        int numberOfSymbols = nameValueList.size() - 1;
+        index = nameValueList.size() + index + numberOfSymbols;
         if (!query.get(index).equalsIgnoreCase("where")
                 || !isListValid(nameValueList, "NameValueList")) {
             server.setErrorLine("Invalid query.");
             return false;
         }
-
 
         index++;
 
@@ -384,7 +384,7 @@ public class QueryParser {
     }
 
     public void addItem(List<String> chosenList, List<String> query, int index) {
-        if (!query.get(index).equals(",")) {
+        if (!query.get(index).equals(",") && !query.get(index).equals("=")) {
             chosenList.add(query.get(index));
         }
     }

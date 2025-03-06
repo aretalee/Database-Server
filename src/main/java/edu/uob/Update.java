@@ -10,26 +10,30 @@ import java.util.List;
 
 public class Update {
 
-    // must call ConditionHandler.java method before this to unsure conditions have already been checked
-
     public void updateTable(Table chosenTable, List<String> nameValueList, List<List<String>> conditionList) throws IOException {
+
+        ConditionHandler conditionHandler = new ConditionHandler();
+        List<Integer> rowsToUpdate = conditionHandler.filterTable(chosenTable, conditionList);
+        List<List<String>> tableList = chosenTable.accessTable();
 
         int attributeIndex = 0;
         int valueIndex = 1;
 
-        while (attributeIndex < nameValueList.size()) {
-            int chosenIndex = ColumnIndexFinder.findColumnIndex(chosenTable, nameValueList.get(attributeIndex));
-
-            if(chosenIndex != -1) { // remove magic number later
-                for(List<String> row : chosenTable.accessTable()) {
-                    // assume table has already been filtered
-                    row.set(chosenIndex, nameValueList.get(valueIndex));
+        // maybe can try to simplify this
+        if (!rowsToUpdate.isEmpty()) {
+            for (Integer index : rowsToUpdate) {
+                while (attributeIndex < nameValueList.size()) {
+                    String headerName = nameValueList.get(attributeIndex);
+                    int headerIndex = chosenTable.accessColumnHeaders().indexOf(headerName);
+                    tableList.get(index).set(headerIndex, nameValueList.get(valueIndex));
+                    attributeIndex += 2;
+                    valueIndex += 2;
                 }
+                attributeIndex = 0;
+                valueIndex = 1;
             }
-            attributeIndex += 2;
-            valueIndex += 2;
-        }
 
+        }
 
         // save back to filesystem
         chosenTable.saveToFile(chosenTable.getTableFile());
