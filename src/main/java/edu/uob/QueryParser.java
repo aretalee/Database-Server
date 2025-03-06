@@ -350,7 +350,7 @@ public class QueryParser {
 
         for (List<String> row : conditionList) {
             for (String item : row) {
-                if (item.equals("and") || item.equals("or")) {
+                if (item.equalsIgnoreCase("and") || item.equalsIgnoreCase("or")) {
                     boolOperators.add(item);
                 } else {
                     comparisons.add(item);

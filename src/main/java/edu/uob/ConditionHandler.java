@@ -43,32 +43,36 @@ public class ConditionHandler {
         List<Integer> tempList = allResults.get(0);
         int boolIndex = 0;
 
-        for (List<Integer> thisResult : allResults) {
-            if (!tempList.isEmpty() && !thisResult.isEmpty()) {
-                editLists(tempList, thisResult, boolOperators.get(boolIndex));
+        for (int index = 1; index < allResults.size(); index++) {
+            if (!tempList.isEmpty() && !allResults.get(index).isEmpty() && (boolIndex <= boolOperators.size())) {
+                tempList = editLists(tempList, allResults.get(index), boolOperators.get(boolIndex));
+                boolIndex++;
             }
-            boolIndex++;
         }
 
         tempList.sort(null);
         return tempList;
     }
 
-    public void editLists(List<Integer> listOne, List<Integer> listTwo, String operator) {
+    public List<Integer> editLists(List<Integer> listOne, List<Integer> listTwo, String operator) {
         if (operator.equalsIgnoreCase("and")) {
-            for (Integer i : listTwo) {
-                if (!listOne.contains(i)) {
-                    listTwo.remove(i);
-                }
-            }
-            for (Integer j : listOne) {
-                if (!listTwo.contains(j)) {
-                    listOne.remove(j);
-                }
-            }
+            listTwo.removeIf(i -> !listOne.contains(i));
+            listOne.removeIf(j -> !listTwo.contains(j));
+//            for (Integer i : new ArrayList<Integer>(listTwo)) {
+//                if (!listOne.contains(i)) {
+//                    listTwo.remove(i);
+//                }
+//            }
+//            for (Integer j : new ArrayList<Integer>(listOne)) {
+//                if (!listTwo.contains(j)) {
+//                    listOne.remove(j);
+//                }
+//            }
+        } else {
+            listOne.removeAll(listTwo);
+            listOne.addAll(listTwo);
         }
-        listOne.removeAll(listTwo);
-        listOne.addAll(listTwo);
+        return listOne;
     }
 
 
@@ -90,8 +94,8 @@ public class ConditionHandler {
         int compOne;
         int compTwo;
 
-        if (comparator.equals("like")) {
-            return currentRow.get(index).toLowerCase().contains(value.toLowerCase()); // make this prettier maybe?
+        if (comparator.equalsIgnoreCase("like")) {
+            return currentRow.get(index).contains(value); // make this prettier maybe?
         } else if (comparator.equals("==")) {
             return currentRow.get(index).equalsIgnoreCase(value);
         } else if (comparator.equals("!=")) {

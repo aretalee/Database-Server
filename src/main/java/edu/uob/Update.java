@@ -32,13 +32,7 @@ public class Update {
                 attributeIndex = 0;
                 valueIndex = 1;
             }
-
         }
-
-        // save back to filesystem
         chosenTable.saveToFile(chosenTable.getTableFile());
-
     }
-
-
 }

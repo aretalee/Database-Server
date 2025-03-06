@@ -9,7 +9,6 @@ public class Select {
 
     public void selectRecords(DBServer server, Table chosenTable, List<String> chosenHeaders, List<List<String>> conditionList) {
 
-
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList);
 
@@ -44,8 +43,6 @@ public class Select {
             server.setTableForPrinting(selectedColumns);
             server.setPrintBoolean(true);
         }
-        // save back to filesystem
-//        chosenTable.saveToFile(chosenTable.getTableFile());
     }
 
     public List<String> formatOutputTable(List<List<String>> tableList, List<String> headers, List<Integer> chosenRows) {
@@ -63,13 +60,16 @@ public class Select {
         } else if (chosenRows.isEmpty()) {
             return null;
         } else {
-            for (List<String> row : tableList) {
-                if (tableList.indexOf(row) == chosenRows.get(rowIndex)) {
-                    formattedRows.add(String.join("\t", row) + "\n");
-                    if (rowIndex < chosenRows.size() - 1) {
-                        rowIndex++;
-                    }
-                }
+//            for (List<String> row : tableList) {
+//                if (tableList.indexOf(row) == chosenRows.get(rowIndex)) {
+//                    formattedRows.add(String.join("\t", row) + "\n");
+//                    if (rowIndex < chosenRows.size() - 1) {
+//                        rowIndex++;
+//                    }
+//                }
+//            }
+            for (Integer index : chosenRows) {
+                formattedRows.add(String.join("\t", tableList.get(index)) + "\n");
             }
         }
         return formattedRows;
