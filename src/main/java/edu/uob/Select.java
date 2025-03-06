@@ -5,14 +5,21 @@ import java.util.List;
 
 public class Select {
 
+    private boolean printAllRows = false;
+
+    public void setPrintAllRows(boolean printAllRows) {
+        this.printAllRows = printAllRows;
+    }
+
     public void selectRecords(DBServer server, Table chosenTable, List<String> chosenHeaders, List<List<String>> conditionList) {
 
-        if (chosenHeaders.get(0).equals("*")) {
-            // print all rows
-            // assume table has already been filtered
+        ConditionHandler conditionHandler = new ConditionHandler();
+        List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList, this);
 
-            List<String> allRows = formatOutputTable(chosenTable.accessTable(), chosenTable.accessColumnHeaders());
-            server.setTableForPrinting(allRows);
+
+        if (chosenHeaders.get(0).equals("*")) {
+            List<String> allColumns = formatOutputTable(chosenTable.accessTable(), chosenTable.accessColumnHeaders(), rowsToSelect);
+            server.setTableForPrinting(allColumns);
             server.setPrintBoolean(true);
 
         } else {
@@ -24,7 +31,6 @@ public class Select {
             }
 
             for (List<String> row : chosenTable.accessTable()) {
-                // assume table has already been filtered
                 List<String> rowValues = new ArrayList<String>();
 
                 for (int currentIndex : headerIndexes) {
@@ -34,25 +40,39 @@ public class Select {
                 }
                 toBePrinted.add(rowValues);
             }
-            List<String> selectedRows = formatOutputTable(toBePrinted, chosenHeaders);
-            server.setTableForPrinting(selectedRows);
+            List<String> selectedColumns = formatOutputTable(toBePrinted, chosenHeaders, rowsToSelect);
+            server.setTableForPrinting(selectedColumns);
             server.setPrintBoolean(true);
         }
         // save back to filesystem
 //        chosenTable.saveToFile(chosenTable.getTableFile());
     }
 
+    public List<String> formatOutputTable(List<List<String>> tableList, List<String> headers, List<Integer> chosenRows) {
 
-    public List<String> formatOutputTable(List<List<String>> tableList, List<String> headers) {
+        List<String> formattedRows = new ArrayList<String>();
+        formattedRows.add("\n" + String.join("\t", headers) + "\n");
 
-        List<String> chosenRows = new ArrayList<String>();
+        int rowIndex = 0;
 
-        chosenRows.add("\n" + String.join("\t", headers) + "\n");
-
-        for (List<String> row : tableList) {
-            chosenRows.add(String.join("\t", row) + "\n");
+        if (printAllRows) {
+            for (List<String> row : tableList) {
+                formattedRows.add(String.join("\t", row) + "\n");
+            }
+            printAllRows = false;
+        } else if (chosenRows.isEmpty()) {
+            return null;
+        } else {
+            for (List<String> row : tableList) {
+                if (tableList.indexOf(row) == chosenRows.get(rowIndex)) {
+                    formattedRows.add(String.join("\t", row) + "\n");
+                    if (rowIndex < chosenRows.size() - 1) {
+                        rowIndex++;
+                    }
+                }
+            }
         }
-        return chosenRows;
+        return formattedRows;
     }
 
 

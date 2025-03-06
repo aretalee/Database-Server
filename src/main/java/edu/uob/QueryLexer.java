@@ -10,7 +10,7 @@ import java.util.Arrays;
 public class QueryLexer{
 
     String query;
-    String[] specialCharacters = {"(",")",",",";"};
+    String[] specialCharacters = {"(",")",",",";","=","!",">","<"};
     ArrayList<String> tokens = new ArrayList<String>();
 
     public QueryLexer(String line) {
@@ -20,7 +20,7 @@ public class QueryLexer{
 
     public static void main(String args[]) {
 
-        String newQuery = "CREATE TABLE marks (Name, Mark, Pass); ";
+        String newQuery = "SELECT * FROM STUDENTS WHERE AGE>=10 AND MARK!=70;";
         QueryLexer lexer = new QueryLexer(newQuery);
         lexer.setup();;
         for (String token : lexer.tokens) {
@@ -37,10 +37,10 @@ public class QueryLexer{
     {
         // Split the query on single quotes (to separate out query text from string literals)
         String[] fragments = query.split("'");
-        for (int i=0; i<fragments.length; i++) {
+        for (int i = 0; i < fragments.length; i++) {
             // Every other fragment is a string literal, so just add it straight to "result" token list
 //            if (i%2 != 0) tokens.add("'" + fragments[i] + "'");
-            if (i%2 != 0) tokens.add(fragments[i]);
+            if (i % 2 != 0) tokens.add(fragments[i]);
                 // If it's not a string literal, it must be query text (which needs further processing)
             else {
                 // Tokenise the fragment into an array of strings - this is the "clever" bit !
@@ -49,15 +49,14 @@ public class QueryLexer{
                 tokens.addAll(Arrays.asList(nextBatchOfTokens));
             }
         }
-
-
+        combineOperators();
     }
 
     public String[] tokenise(String input)
     {
         // Add in some extra padding spaces either side of the "special characters"...
         // so we can be SURE that they are separated by AT LEAST one space (possibly more)
-        for(int i=0; i<specialCharacters.length ;i++) {
+        for(int i = 0; i < specialCharacters.length; i++) {
             input = input.replace(specialCharacters[i], " " + specialCharacters[i] + " ");
         }
         // Remove any double spaces (the previous padding activity might have introduced some of these)
@@ -67,5 +66,28 @@ public class QueryLexer{
         // Finally split on the space char (since there will now ALWAYS be a SINGLE space between tokens)
         return input.split(" ");
     }
+
+    public void combineOperators() {
+        for (int index = 0; index < tokens.size() - 1; index++) {
+            if (tokens.get(index).equals("=") && tokens.get(index + 1).equals("=")) {
+                tokens.set(index, "==");
+                tokens.remove(index + 1);
+            } else if (tokens.get(index).equals("!") && tokens.get(index + 1).equals("=")) {
+                tokens.set(index, "!=");
+                tokens.remove(index + 1);
+            } else if (tokens.get(index).equals(">") && tokens.get(index + 1).equals("=")) {
+                tokens.set(index, ">=");
+                tokens.remove(index + 1);
+            } else if (tokens.get(index).equals("<") && tokens.get(index + 1).equals("=")) {
+                tokens.set(index, "<=");
+                tokens.remove(index + 1);
+            }
+        }
+
+    }
+
+
 }
+
+
 

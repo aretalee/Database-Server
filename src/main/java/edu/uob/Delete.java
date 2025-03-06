@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Delete {
-    // must call Comparer.java method before this to unsure conditions have already been checked
+    // must call ConditionHandler.java method before this to unsure conditions have already been checked
 
     public void deleteRecord(Table chosenTable, List<List<String>> conditionList) throws IOException {
 

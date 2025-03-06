@@ -1,15 +1,10 @@
 package edu.uob;
 
-import javax.management.Query;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
-// in-memory representation -> hash table/map (in DBServer class)
-// exposing all info to DBcmd (filled up by parsing)
-// different overwritten classes for each method that alter or read from file
 
 // need to switch out all magic numbers if possible
 // try to trim down repeated code
@@ -28,13 +23,12 @@ public class QueryParser {
 
     public boolean parseQuery(List<String> query, DBServer server) throws IOException {
 
-        boolean queryValid;
-
         if (!isThereSemicolon(query.get(query.size() - 1))) {
             server.setErrorLine("Missing semicolon at end of query.");
-            queryValid = false;
-            return queryValid;
+            return false;
         }
+
+        boolean queryValid;
 
         // need to make this less complex...
 
@@ -96,7 +90,7 @@ public class QueryParser {
             }
             int index = 4;
 
-            attributeList = addToList(attributeList, query, index, "AttributeList");
+            attributeList = addToList(attributeList, query, index, ")");
             if (!query.get(query.size() - 2).equalsIgnoreCase(")")
                     || !isListValid(attributeList, "AttributeList")) {
                 server.setErrorLine("Invalid query three.");
@@ -171,7 +165,7 @@ public class QueryParser {
 
         List<String> valueList = new ArrayList<String>();
         int index = 5;
-        valueList = addToList(valueList, query, index, "ValueList");
+        valueList = addToList(valueList, query, index, ")");
 
         if (!query.get(query.size() - 2).equalsIgnoreCase(")")) {
             server.setErrorLine("Invalid query.");
@@ -184,22 +178,7 @@ public class QueryParser {
         return true;
     }
 
-    public static void main(String args[]) throws IOException {
-        String query = "SELECT height FROM marks WHERE name == 'Chris' and age > 18 OR height < 190";
-
-        QueryLexer lexer = new QueryLexer(query);
-        lexer.setup();
-        ArrayList<String> queries = lexer.getTokens();
-
-//        System.out.println(queries);
-
-        QueryParser parser = new QueryParser();
-        DBServer server = new DBServer();
-        parser.parseSelect(server, queries);
-
-    }
-
-    public boolean parseSelect(DBServer server, List<String> query) throws IOException {
+    public boolean parseSelect(DBServer server, List<String> query) {
 
         List<String> wildAttributeList = new ArrayList<String>();
         int index = 1;
@@ -207,7 +186,7 @@ public class QueryParser {
         if (query.get(1).equalsIgnoreCase("*")) {
             wildAttributeList.add(query.get(1));
         } else {
-            wildAttributeList = addToList(wildAttributeList, query, index, "WildAttributeList");
+            wildAttributeList = addToList(wildAttributeList, query, index, "from");
         }
 
         int numberOfCommas = wildAttributeList.size() - 1;
@@ -232,11 +211,14 @@ public class QueryParser {
                 server.setErrorLine((query.size() - 2) + " " + index + " " + "Invalid query two.");
                 return false;
             }
-            parseCondition(server, query, index + 1, conditionList);
+            if (!parseCondition(server, query, index + 1, conditionList)) {
+                server.setErrorLine("Could not parse conditions.");
+                return false;
+            }
         }
 
         Select select = new Select();
-        select.selectRecords(server, server.getTable(tableName), wildAttributeList, conditionList);
+        select.selectRecords(server, server.getTable(tableName), wildAttributeList, refineConditionList(conditionList));
 
         return true;
     }
@@ -253,7 +235,7 @@ public class QueryParser {
 
         List<String> nameValueList = new ArrayList<String>();
         int index = 3;
-        nameValueList = addToList(nameValueList, query, index, "NameValueList");
+        nameValueList = addToList(nameValueList, query, index, "where");
 
         index = nameValueList.size() + index;
         if (!query.get(index).equalsIgnoreCase("where")
@@ -266,10 +248,13 @@ public class QueryParser {
         index++;
 
         List<List<String>> conditionList = new ArrayList<>();
-        parseCondition(server, query, index, conditionList);
+        if (!parseCondition(server, query, index, conditionList)) {
+            server.setErrorLine("Could not parse conditions.");
+            return false;
+        }
 
         Update update = new Update();
-        update.updateTable(server.getTable(tableName), nameValueList, conditionList);
+        update.updateTable(server.getTable(tableName), nameValueList, refineConditionList(conditionList));
 
 
         return true;
@@ -287,11 +272,14 @@ public class QueryParser {
         String tableName = query.get(2).toLowerCase();
 
         List<List<String>> conditionList = new ArrayList<>();
-        parseCondition(server, query, 4, conditionList);
+        if (!parseCondition(server, query, 4, conditionList)) {
+            server.setErrorLine("Could not parse conditions.");
+            return false;
+        }
 
 
         Delete delete = new Delete();
-        delete.deleteRecord(server.getTable(tableName), conditionList);
+        delete.deleteRecord(server.getTable(tableName), refineConditionList(conditionList));
 
         return true;
     }
@@ -335,13 +323,6 @@ public class QueryParser {
                 break; // see if there is workaround (avoid using break if possible)
             }
             if (currentToken.equals("(")) {
-                        //&& (query.get(i + lookAheadBy).equalsIgnoreCase("and")
-                        //|| query.get(i + lookAheadBy).equalsIgnoreCase("or"))) {
-                    // need to generalise this
-                    // only work if there's one bracket
-                    // doesn't account for (( or ((( --> space between bracket and Bool > lookAhead
-                    // something OR (((this = 1 AND that = 2) OR what > 4) AND here < 6)
-
                 parseCondition(server, query, i + 1, conditionList);
             }
 
@@ -363,6 +344,26 @@ public class QueryParser {
         return true;
     }
 
+    public List<List<String>> refineConditionList(List<List<String>> conditionList) {
+        List<List<String>> refinedList = new ArrayList<List<String>>();
+        List<String> comparisons = new ArrayList<String>();
+        List<String> boolOperators = new ArrayList<String>();
+
+        for (List<String> row : conditionList) {
+            for (String item : row) {
+                if (item.equals("and") || item.equals("or")) {
+                    boolOperators.add(item);
+                } else {
+                    comparisons.add(item);
+                }
+            }
+        }
+        refinedList.add(comparisons);
+        refinedList.add(boolOperators);
+        return refinedList;
+    }
+
+
     public boolean isTokenComparator(String token, String[] comparators) {
         for (String comparator : comparators) {
             if (comparator.equals(token)) {
@@ -373,24 +374,13 @@ public class QueryParser {
     }
 
 
-    public List<String> addToList(List<String> chosenList, List<String> query, int index, String listType) {
+    public List<String> addToList(List<String> chosenList, List<String> query, int index, String terminatingChar) {
 
-        if (listType.equalsIgnoreCase("NameValueList")) {
-            while (!query.get(index).equalsIgnoreCase("WHERE")) {
-                addItem(chosenList, query, index);
-                index++;
-            }
-        } else if (listType.equalsIgnoreCase("WildAttributeList")) {
-            while (!query.get(index).equalsIgnoreCase("FROM")) {
-                addItem(chosenList, query, index);
-                index++;
-            }
-        } else {
-            while (!query.get(index).equals(")")) {
-                addItem(chosenList, query, index);
-                index++;
-            }
+        while (!query.get(index).equalsIgnoreCase(terminatingChar)) {
+            addItem(chosenList, query, index);
+            index++;
         }
+
         return chosenList;
     }
 
