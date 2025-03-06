@@ -17,10 +17,10 @@ public class DBServer {
 
     private static final char END_OF_TRANSMISSION = 4;
     private String storageFolderPath;
+    private boolean calledUseCommand = false;
 
     private List<Database> allDatabases = new ArrayList<Database>();
     private List<Table> allTables = new ArrayList<Table>();
-    private boolean populateLists = true;
     private String currentDatabase;
 
     private List<String> tableForPrinting = new ArrayList<String>();
@@ -41,6 +41,9 @@ public class DBServer {
         try {
             // Create the database storage folder if it doesn't already exist !
             Files.createDirectories(Paths.get(storageFolderPath));
+
+            FileHandler fileHandler = new FileHandler();
+            fileHandler.populateWithExistingFiles(this);
         } catch(IOException ioe) {
             System.out.println("Can't seem to create database storage folder " + storageFolderPath);
         }
@@ -55,23 +58,17 @@ public class DBServer {
     public String handleCommand(String command) throws IOException {
         // TODO implement your server logic here
 
-        // only want to populate when server class is instantiated (?)
-        // records should remain until server closes
-        if (populateLists) {
-            FileHandler fileHandler = new FileHandler();
-            fileHandler.populateWithExistingFiles(this);
-            populateLists = false;
-        }
-
         QueryLexer queryLexer = new QueryLexer(command);
         queryLexer.setup();
         List<String> tokens = queryLexer.getTokens();
 
+        if (!tokens.get(0).equalsIgnoreCase("use") && !tokens.get(0).equalsIgnoreCase("create")
+                && !tokens.get(0).equalsIgnoreCase("database") && !calledUseCommand) {
+            return "[ERROR]: Please call USE before attempting table-specific commands.";
+        }
+
         QueryParser parser = new QueryParser();
         return returnStatement(parser.parseQuery(tokens, this));
-
-
-//        return "";
     }
 
     public String returnStatement(boolean parserReturnValue) {
@@ -86,7 +83,6 @@ public class DBServer {
                 }
                 printTable = false;
             }
-
         } else {
             // print [Error] followed by error message
             returnStatement =  ("[ERROR]: " + errorLine);
@@ -152,6 +148,10 @@ public class DBServer {
 
     public void setErrorLine(String error) {
         this.errorLine = error;
+    }
+
+    public void setCalledUseCommand(boolean calledUseCommand) {
+        this.calledUseCommand = calledUseCommand;
     }
 
     //  === Methods below handle networking aspects of the project - you will not need to change these ! ===

@@ -13,33 +13,36 @@ public class Alter {
     public void alterTable(Table chosenTable, String valueType, String chosenHeader) throws IOException {
 
         // best to separate out into smaller functions
-
         if(valueType.equalsIgnoreCase("add")) {
-
-            chosenTable.accessColumnHeaders().add(chosenHeader);
-
-            for(List<String> row : chosenTable.accessTable()) {
-                row.add(null);
-                // adding null parameter to each row for easy editing later
-            }
-
+            addColumnHeader(chosenTable, chosenHeader);
         }
 
         if(valueType.equalsIgnoreCase("drop")) {
-            int chosenIndex = ColumnIndexFinder.findColumnIndex(chosenTable, chosenHeader);
-            chosenTable.accessColumnHeaders().remove(chosenIndex);
-
-            if(chosenIndex != -1 && !chosenHeader.equalsIgnoreCase("id")) { // should change checking ID into error handling?
-                for(List<String> row : chosenTable.accessTable()) {
-                    row.remove(chosenIndex);
-                }
-            }
-
+            removeColumnHeader(chosenTable, chosenHeader);
         }
 
-        // save back to filesystem
         chosenTable.saveToFile(chosenTable.getTableFile());
 
+    }
+
+    public void addColumnHeader(Table table, String header) {
+        table.accessColumnHeaders().add(header);
+
+        for(List<String> row : table.accessTable()) {
+            row.add(null);
+            // adding null parameter to each row for easy editing later
+        }
+    }
+
+    public void removeColumnHeader(Table table, String header) {
+        int chosenIndex = ColumnIndexFinder.findColumnIndex(table, header);
+        table.accessColumnHeaders().remove(chosenIndex);
+
+        if(chosenIndex != -1 && !header.equalsIgnoreCase("id")) { // should change checking ID into error handling?
+            for(List<String> row : table.accessTable()) {
+                row.remove(chosenIndex);
+            }
+        }
     }
 
 }

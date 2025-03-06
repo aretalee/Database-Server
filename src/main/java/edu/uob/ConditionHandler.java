@@ -58,16 +58,6 @@ public class ConditionHandler {
         if (operator.equalsIgnoreCase("and")) {
             listTwo.removeIf(i -> !listOne.contains(i));
             listOne.removeIf(j -> !listTwo.contains(j));
-//            for (Integer i : new ArrayList<Integer>(listTwo)) {
-//                if (!listOne.contains(i)) {
-//                    listTwo.remove(i);
-//                }
-//            }
-//            for (Integer j : new ArrayList<Integer>(listOne)) {
-//                if (!listTwo.contains(j)) {
-//                    listOne.remove(j);
-//                }
-//            }
         } else {
             listOne.removeAll(listTwo);
             listOne.addAll(listTwo);
@@ -95,7 +85,7 @@ public class ConditionHandler {
         int compTwo;
 
         if (comparator.equalsIgnoreCase("like")) {
-            return currentRow.get(index).contains(value); // make this prettier maybe?
+            return currentRow.get(index).contains(value);
         } else if (comparator.equals("==")) {
             return currentRow.get(index).equalsIgnoreCase(value);
         } else if (comparator.equals("!=")) {

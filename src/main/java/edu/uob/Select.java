@@ -60,14 +60,6 @@ public class Select {
         } else if (chosenRows.isEmpty()) {
             return null;
         } else {
-//            for (List<String> row : tableList) {
-//                if (tableList.indexOf(row) == chosenRows.get(rowIndex)) {
-//                    formattedRows.add(String.join("\t", row) + "\n");
-//                    if (rowIndex < chosenRows.size() - 1) {
-//                        rowIndex++;
-//                    }
-//                }
-//            }
             for (Integer index : chosenRows) {
                 formattedRows.add(String.join("\t", tableList.get(index)) + "\n");
             }

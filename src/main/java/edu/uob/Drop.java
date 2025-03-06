@@ -5,38 +5,34 @@ import java.nio.file.Paths;
 
 public class Drop {
 
-    public void dropFile(String filePath, DBServer server) throws IOException {
+    public boolean dropFile(String filePath, DBServer server) {
 
         File file = new File(filePath);
 
         if (!file.exists()) {
-            throw new FileNotFoundException(file.getAbsolutePath());
+            server.setErrorLine("The file " + file.getName() + " does not exist");
+            return false;
         }
-
         if (file.isDirectory()) {
-            file = clearDirectory(file, server);
+            File[] fileList = file.listFiles();
 
-            server.removeDatabase(file.getName());
-        } else {
-            server.removeTable(file.getName());
-        }
+            if (fileList != null) {
+                file = clearDirectory(file, fileList, server);
+                server.removeDatabase(file.getName());
+            }
+        } else { server.removeTable(file.getName()); }
 
-        quickDrop(file);
-
+        quickDrop(file, server);
+        return true;
     }
 
-    public void quickDrop(File uneededFile) throws IOException {
+    public void quickDrop(File uneededFile, DBServer server) {
         if (!uneededFile.delete()) {
-            throw new IOException("Could not delete file " + uneededFile.getAbsolutePath());
+            server.setErrorLine("Could not delete file " + uneededFile.getName());
         }
     }
 
-    public File clearDirectory(File directory, DBServer server) throws IOException {
-        File[] fileList = directory.listFiles();
-
-        if (fileList == null) {
-            throw new NullPointerException("allDatabases");
-        }
+    public File clearDirectory(File directory, File[] fileList,  DBServer server) {
 
         for (File f : fileList) {
             dropFile(f.getAbsolutePath(), server);

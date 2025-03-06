@@ -26,7 +26,6 @@ public class Use {
             }
         }
 
-
         Database newDatabase = doesDatabaseExist(databaseName, server);
 
         if (newDatabase == null) {
@@ -34,12 +33,7 @@ public class Use {
             server.addDatabase(newDatabase);
         }
 
-        // need to handle cases where object already exists
-
-        // check if database exists by checking against list in Server class
-
-        // if it doesn't exist, make new database and return
-
+        server.setCalledUseCommand(true);
         return newDatabase;
         // should Database instance be created here or in CREATE
         // can then be saved as currentDatabase in class that called this

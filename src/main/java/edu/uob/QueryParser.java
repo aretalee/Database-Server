@@ -6,15 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-// need to switch out all magic numbers if possible
-// try to trim down repeated code
-// also try to make it more compact (maybe less if-statements?)
-
-// error handling needs to be refined!!!!!!
-
-// check if names should be turned to lowercase!!!!!!
-
-
 public class QueryParser {
 
     String[] reservedWords = {"use", "create", "drop", "alter", "insert", "select", "update", "delete", "join"
@@ -29,9 +20,6 @@ public class QueryParser {
         }
 
         boolean queryValid;
-
-        // need to make this less complex...
-
         switch (query.get(0).toLowerCase()) {
             case "use" ->  queryValid =  parseUse(server, query);
             case "create" ->  queryValid =  parseCreate(server, query);
@@ -46,9 +34,7 @@ public class QueryParser {
                 server.setErrorLine("First word is not a valid query type.");
                 queryValid =  false;
             }
-
         }
-
         return queryValid;
     }
 
@@ -70,7 +56,6 @@ public class QueryParser {
 
     public boolean parseCreate(DBServer server, List<String> query) throws IOException {
 
-        // need to simplify this...
         List<String> attributeList = new ArrayList<String>();
         attributeList.add("id");
 
@@ -84,14 +69,14 @@ public class QueryParser {
         String fileName = query.get(2).toLowerCase();
 
         if (query.size() > 4) {
-            if (!query.get(3).equalsIgnoreCase("(")) {
+            if (!query.get(3).equals("(")) {
                 server.setErrorLine("Invalid query two.");
                 return false;
             }
             int index = 4;
 
             attributeList = addToList(attributeList, query, index, ")");
-            if (!query.get(query.size() - 2).equalsIgnoreCase(")")
+            if (!query.get(query.size() - 2).equals(")")
                     || !isListValid(attributeList, "AttributeList")) {
                 server.setErrorLine("Invalid query three.");
                 return false;
@@ -124,12 +109,11 @@ public class QueryParser {
         if (query.get(1).equalsIgnoreCase("database")) {
             filePath = server.getStorageFolderPath() + File.separator + fileName;
         } else {
-            filePath = server.getStorageFolderPath() + File.separator + server.getCurrentDatabase() + File.separator + fileName + ".tab";
-            // does DROP TABLE only work in specified database? or is it able to drop table in another one
+            filePath = server.getStorageFolderPath() + File.separator
+                    + server.getCurrentDatabase() + File.separator + fileName + ".tab";
         }
-        drop.dropFile(filePath, server);
 
-        return true;
+        return drop.dropFile(filePath, server);
     }
 
     public boolean parseAlter(DBServer server, List<String> query) throws IOException {
@@ -161,7 +145,7 @@ public class QueryParser {
             return false;
         }
 
-        String tableName = query.get(2).toLowerCase().toLowerCase();
+        String tableName = query.get(2).toLowerCase();
 
         List<String> valueList = new ArrayList<String>();
         int index = 5;
@@ -173,9 +157,8 @@ public class QueryParser {
         }
 
         Insert insert = new Insert();
-        insert.insertIntoTable(server.getTable(tableName), valueList);
 
-        return true;
+        return insert.insertIntoTable(server, server.getTable(tableName), valueList);
     }
 
     public boolean parseSelect(DBServer server, List<String> query) {
@@ -183,7 +166,7 @@ public class QueryParser {
         List<String> wildAttributeList = new ArrayList<String>();
         int index = 1;
 
-        if (query.get(1).equalsIgnoreCase("*")) {
+        if (query.get(1).equals("*")) {
             wildAttributeList.add(query.get(1));
         } else {
             wildAttributeList = addToList(wildAttributeList, query, index, "from");
@@ -194,7 +177,7 @@ public class QueryParser {
         if (!query.get(index).equalsIgnoreCase("from")
                 || !checkAlphaNumeric(query.get(index + 1))
                 || isThereReservedWord(query.get(index + 1))
-                || !isListValid(wildAttributeList, "WildAttributeList")) {
+                || (!isListValid(wildAttributeList, "WildAttributeList") && !query.get(1).equals("*"))) {
             server.setErrorLine("Invalid query one.");
             return false;
         }
@@ -312,8 +295,6 @@ public class QueryParser {
 
         String[] comparators = {"==", ">", "<", ">=", "<=", "!=", " LIKE "};
 
-        int lookAheadBy = 4;
-
         List<String> precedence = new ArrayList<String>();
         for (int i = startIndex; i < query.size(); i++) {
             String currentToken = query.get(i);
@@ -325,7 +306,6 @@ public class QueryParser {
                 parseCondition(server, query, i + 1, conditionList);
             }
 
-            // trim this down if possible!
             if (!currentToken.equalsIgnoreCase("and") && !currentToken.equalsIgnoreCase("or")
                         && (i != 0 && !isTokenComparator(query.get(i - 1), comparators)
                         && !checkAlphaNumeric(currentToken) && isThereReservedWord(currentToken))
@@ -392,24 +372,78 @@ public class QueryParser {
     public boolean isListValid(List<String> chosenList, String listType) {
 
         for (int i = 0; i < chosenList.size(); i++) {
-
-            // repeated code...
             if (listType.equalsIgnoreCase("NameValueList")) {
-                if (i % 4 == 0
-                        && (!checkAlphaNumeric(chosenList.get(i))
-                        || isThereReservedWord(chosenList.get(i)))) {
+                if (!checkNameValueList(chosenList, i)) {
+                    return false;
+                }
+            } else if (listType.equalsIgnoreCase("ValueList")) {
+                if (!checkValueLists(chosenList, i)) {
                     return false;
                 }
             } else {
-                if ((!chosenList.get(i).equals(",") && !chosenList.get(i).equals("*"))
-                        && (!checkAlphaNumeric(chosenList.get(i))
-                        || isThereReservedWord(chosenList.get(i)))) {
+                if (!checkAttributeLists(chosenList, i)) {
                     return false;
                 }
             }
         }
-
         return true;
+    }
+
+    public boolean checkValueLists(List<String> chosenList, int index) {
+        if (index % 2 == 0 && checkValue(chosenList.get(index))) { return false; }
+        else return chosenList.get(index).equals(",");
+    }
+
+    public boolean checkAttributeLists(List<String> chosenList, int index) {
+        if (index % 2 == 0
+                && !checkAlphaNumeric(chosenList.get(index))
+                || isThereReservedWord(chosenList.get(index))) { return false; }
+        else return !chosenList.get(index).equals(",");
+    }
+
+    public boolean checkNameValueList(List<String> chosenList, int index) {
+        if (((index - 1) % 4) == 0 && !chosenList.get(index).equals("=")) { return false; }
+        else if (((index - 2) % 4) == 0 && checkValue(chosenList.get(index))) { return false; }
+        else if (((index + 1) % 4) == 0 && !chosenList.get(index).equals(",")) { return false; }
+        else return index % 4 != 0
+                    || (checkAlphaNumeric(chosenList.get(index))
+                    && !isThereReservedWord(chosenList.get(index)));
+    }
+
+    public boolean checkValue(String token) {
+
+        boolean isNumber = true;
+        boolean isString = true;
+
+        // integer & float literals
+        for (int i = 0; i < token.length(); i++) {
+            if (i == 0 && !Character.isDigit(token.charAt(i))
+                    && token.charAt(i) != '+' && token.charAt(i) != '-') {
+                isNumber =  false;
+            } else if (((i == token.length() - 1) || (i == 1 && (token.charAt(0) == '+' || token.charAt(0) == '-')) )
+                    && !Character.isDigit(token.charAt(i))) {
+                isNumber =  false;
+            } else if (!Character.isDigit(token.charAt(i)) && token.charAt(i) != '.') {
+                isNumber =  false;
+            }
+        }
+        // string literal
+        for (int i = 0; i < token.length(); i++) {
+            if ((i == 0 || i == token.length() - 1)
+                    && token.charAt(i) != '\'') {
+                isString = false;
+            } else if (!Character.isLetter(token.charAt(i))) {
+                isString = false;
+            }
+        }
+
+        // boolean literal & "NULL"
+        if (isNumber || isString || token.equalsIgnoreCase("true")
+                || token.equalsIgnoreCase("false)") || token.equalsIgnoreCase("null")) {
+            return true;
+        }
+
+        return false;
     }
 
     public boolean checkAlphaNumeric(String token) {
