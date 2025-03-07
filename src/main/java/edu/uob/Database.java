@@ -45,9 +45,9 @@ public class Database {
 //    }
 
     // is this needed?
-    public void saveToFile(File file) {
-
-    }
+//    public void saveToFile(File file) {
+//
+//    }
 
 //    //might need helper methods in
 //    public File selectFromTable(String fileName) throws IOException {

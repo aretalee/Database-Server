@@ -10,39 +10,60 @@ import java.util.List;
 
 public class Alter {
 
-    public void alterTable(Table chosenTable, String valueType, String chosenHeader) throws IOException {
+    public boolean alterTable(Table chosenTable, String valueType, String chosenHeader, DBServer server) {
 
         // best to separate out into smaller functions
         if(valueType.equalsIgnoreCase("add")) {
-            addColumnHeader(chosenTable, chosenHeader);
+            if (!addColumnHeader(chosenTable, chosenHeader, server)) {
+                return false;
+            }
+        } else if(valueType.equalsIgnoreCase("drop")) {
+            if (!removeColumnHeader(chosenTable, chosenHeader, server)) {
+                return false;
+            }
         }
 
-        if(valueType.equalsIgnoreCase("drop")) {
-            removeColumnHeader(chosenTable, chosenHeader);
+        if (!chosenTable.saveToFile(chosenTable.getTableFile(), server)) {
+            server.setErrorLine("Could not alter table, please try again.");
+            return false;
         }
 
-        chosenTable.saveToFile(chosenTable.getTableFile());
-
+        return true;
     }
 
-    public void addColumnHeader(Table table, String header) {
+    public boolean addColumnHeader(Table table, String header, DBServer server) {
+
+        if (table == null) {
+            server.setErrorLine("Requested table does not exist.");
+            return false;
+        } else if (table.accessColumnHeaders().contains(header)) {
+            server.setErrorLine("Column already exists.");
+            return false;
+        }
+
         table.accessColumnHeaders().add(header);
 
         for(List<String> row : table.accessTable()) {
             row.add(null);
-            // adding null parameter to each row for easy editing later
         }
+        return true;
     }
 
-    public void removeColumnHeader(Table table, String header) {
+    public boolean removeColumnHeader(Table table, String header, DBServer server) {
         int chosenIndex = ColumnIndexFinder.findColumnIndex(table, header);
-        table.accessColumnHeaders().remove(chosenIndex);
 
-        if(chosenIndex != -1 && !header.equalsIgnoreCase("id")) { // should change checking ID into error handling?
-            for(List<String> row : table.accessTable()) {
-                row.remove(chosenIndex);
-            }
+        if (chosenIndex == -1) {
+            server.setErrorLine("Column does not exist.");
+            return false;
+        } else if (header.equalsIgnoreCase("id")) {
+            server.setErrorLine("Cannot remove id column from table.");
+            return false;
         }
-    }
 
+        table.accessColumnHeaders().remove(chosenIndex);
+        for (List<String> row : table.accessTable()) {
+            row.remove(chosenIndex);
+        }
+        return true;
+    }
 }

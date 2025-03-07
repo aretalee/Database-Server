@@ -19,7 +19,7 @@ public class Table {
 
     // is there a way to format table so that this list isn't needed
     // maybe move attributeList out of constructor?
-    public Table(File newTableFile, List<String> attributeList) throws IOException {
+    public Table(File newTableFile, List<String> attributeList) {
 
         tableList = new ArrayList<List<String>>();
         columnHeaders = new ArrayList<String>();
@@ -62,27 +62,19 @@ public class Table {
     }
 
     // can this be combined with below saveToFile?
-    public void loadTableData() throws IOException {
-
-        try {
-            FileHandler fileHandler = new FileHandler();
-            fileHandler.readFile(tableFile, this);
-            setID();
-        } catch (IOException e) {
-            throw new IOException("File could not be read: " + tableFile.getAbsolutePath());
+    public boolean loadTableData() {
+        FileHandler fileHandler = new FileHandler();
+        if (!fileHandler.readFile(tableFile, this)) {
+            return false;
         }
+        setID();
+        return true;
     }
 
-    // method that save all changed records back to filesystem
 
-    public void saveToFile(File file) throws IOException {
-
-        try {
-            FileHandler fileHandler = new FileHandler();
-            fileHandler.writeTableToFile(file, this);
-        } catch (IOException e) {
-            throw new IOException("File could not be saved: " + file.getAbsolutePath());
-        }
+    public boolean saveToFile(File file, DBServer server) {
+        FileHandler fileHandler = new FileHandler();
+        return fileHandler.writeTableToFile(file, this);
     }
 
 

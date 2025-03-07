@@ -7,12 +7,11 @@ import java.util.List;
 
 public class FileHandler {
 
-    public void readFile(File file, Table currentTable) throws IOException {
+    public boolean readFile(File file, Table currentTable) {
 
         try {
             FileReader fileReader = new FileReader(file);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
-            // for buffered reader --> read all lines by checking if line is null
 
             String currentLine;
             int lineCounter = 1;
@@ -29,25 +28,19 @@ public class FileHandler {
                 }
                 lineCounter++;
             }
-
             bufferedReader.close();
-
-        } catch (FileNotFoundException e){
-            throw new FileNotFoundException(file.getName());
         } catch (IOException e) {
-            throw new IOException(file.getName());
+            return false;
         }
-
+        return true;
     }
 
-    // should file parser be in here? or new class
-
-    public void writeTableToFile(File chosenFile, Table currentTable) throws IOException {
+    // should I still throw error if handled?
+    public boolean writeTableToFile(File chosenFile, Table currentTable) {
 
         try {
             FileWriter fileWriter = new FileWriter(chosenFile);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-            // for buffered reader --> read all lines by checking if line is null
 
             List<String> columnHeaders = currentTable.accessColumnHeaders();
             for (String header : columnHeaders) {
@@ -64,30 +57,28 @@ public class FileHandler {
 
             bufferedWriter.close();
 
-        } catch (FileNotFoundException e){
-            throw new FileNotFoundException(chosenFile.getName());
         } catch (IOException e) {
-            throw new IOException(chosenFile.getName());
+            return false;
         }
-
-        // remember to add in try-catch block
+        return true;
     }
 
-    public void populateWithExistingFiles(DBServer server) throws IOException {
+    public boolean populateWithExistingFiles(DBServer server) {
         File[] storageFolder = (new File(server.getStorageFolderPath())).listFiles();
 
-        if (storageFolder != null) {
+        if (storageFolder != null && storageFolder.length > 0) {
             for (File databaseFile : storageFolder) {
                 Database thisDatabase = new Database(databaseFile);
                 server.getAllDatabases().add(thisDatabase);
-                addTableObjects(server, thisDatabase.getDatabaseName());
+                if (!addTableObjects(server, thisDatabase.getDatabaseName())) {
+                    return false;
+                }
             }
         }
-
-
+        return true;
     }
 
-    public void addTableObjects(DBServer server, String databaseName) throws IOException {
+    public boolean addTableObjects(DBServer server, String databaseName) {
         String databasePath = server.getStorageFolderPath() + File.separator + databaseName;
         File[] databaseFolder = (new File(databasePath)).listFiles();
 
@@ -95,11 +86,13 @@ public class FileHandler {
             for (File tableFile : databaseFolder) {
                 List<String> attributeList = new ArrayList<String>();
                 Table thisTable = new Table(tableFile, attributeList);
-                thisTable.loadTableData();
+                if (!thisTable.loadTableData()) {
+                    return false;
+                }
                 server.getAllTables().add(thisTable);
             }
         }
-
+        return true;
     }
 
 }

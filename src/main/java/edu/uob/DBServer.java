@@ -43,7 +43,10 @@ public class DBServer {
             Files.createDirectories(Paths.get(storageFolderPath));
 
             FileHandler fileHandler = new FileHandler();
-            fileHandler.populateWithExistingFiles(this);
+            if (!fileHandler.populateWithExistingFiles(this)) {
+                System.out.println("Unable to access existing files.");
+                // is this correct?
+            }
         } catch(IOException ioe) {
             System.out.println("Can't seem to create database storage folder " + storageFolderPath);
         }
@@ -62,7 +65,9 @@ public class DBServer {
         queryLexer.setup();
         List<String> tokens = queryLexer.getTokens();
 
-        if (!tokens.get(0).equalsIgnoreCase("use") && !tokens.get(0).equalsIgnoreCase("create")
+        if (command.isEmpty()) {
+            return "[ERROR]: No command specified.";
+        } else if (!tokens.get(0).equalsIgnoreCase("use") && !tokens.get(0).equalsIgnoreCase("create")
                 && !tokens.get(0).equalsIgnoreCase("database") && !calledUseCommand) {
             return "[ERROR]: Please call USE before attempting table-specific commands.";
         }

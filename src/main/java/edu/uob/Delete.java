@@ -10,7 +10,12 @@ import java.util.List;
 
 public class Delete {
 
-    public void deleteRecord(Table chosenTable, List<List<String>> conditionList) throws IOException {
+    public boolean deleteRecord(Table chosenTable, List<List<String>> conditionList, DBServer server) {
+
+        if (chosenTable == null) {
+            server.setErrorLine("Requested table does not exist.");
+            return false;
+        }
 
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList);
@@ -23,8 +28,11 @@ public class Delete {
             }
         }
 
-        chosenTable.saveToFile(chosenTable.getTableFile());
-
+        if (chosenTable.saveToFile(chosenTable.getTableFile(), server)) {
+            server.setErrorLine("Could not delete record, please try again.");
+            return false;
+        }
+        return true;
     }
 
 }

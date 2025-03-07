@@ -8,22 +8,26 @@ import java.util.List;
 
 public class Use {
 
-    public Database switchDatabases(String databasesPath, String databaseName, DBServer server) throws IOException {
+    public boolean switchDatabases(String databasesPath, String databaseName, DBServer server) {
 
         File databases = new File(databasesPath);
         File[] allDatabases = databases.listFiles();
         File requestedDatabase = null;
 
-        if(allDatabases == null) {
-            throw new NullPointerException("allDatabases");
-        } else if(allDatabases.length == 0) {
-            throw new IOException("databases is empty");
+        if(allDatabases == null || allDatabases.length == 0) {
+            server.setErrorLine("No databases found.");
+            return false;
         }
 
         for (File file : allDatabases) {
-            if (file.getName().equals(databaseName)) {
+            if (file != null && file.getName().equals(databaseName)) {
                 requestedDatabase = file;
             }
+        }
+
+        if (requestedDatabase == null) {
+            server.setErrorLine("Requested database does not exist.");
+            return false;
         }
 
         Database newDatabase = doesDatabaseExist(databaseName, server);
@@ -34,13 +38,12 @@ public class Use {
         }
 
         server.setCalledUseCommand(true);
-        return newDatabase;
+        return true;
         // should Database instance be created here or in CREATE
-        // can then be saved as currentDatabase in class that called this
 
     }
 
-    public Database doesDatabaseExist(String databaseName, DBServer server) throws IOException {
+    public Database doesDatabaseExist(String databaseName, DBServer server) {
 
         List<Database> databases = server.getAllDatabases();
         for (Database database : databases) {

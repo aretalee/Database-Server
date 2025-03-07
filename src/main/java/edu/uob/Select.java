@@ -7,7 +7,12 @@ public class Select {
 
     private boolean printAllRows = false;
 
-    public void selectRecords(DBServer server, Table chosenTable, List<String> chosenHeaders, List<List<String>> conditionList) {
+    public boolean selectRecords(DBServer server, Table chosenTable, List<String> chosenHeaders, List<List<String>> conditionList) {
+
+        if (chosenTable == null) {
+            server.setErrorLine("Requested table does not exist.");
+            return false;
+        }
 
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList);
@@ -26,6 +31,10 @@ public class Select {
             List<List<String>> toBePrinted = new ArrayList<List<String>>();
 
             for (String header : chosenHeaders) {
+                if (!chosenTable.accessColumnHeaders().contains(header)) {
+                    server.setErrorLine("Requested column does not exist.");
+                    return false;
+                }
                 headerIndexes.add(ColumnIndexFinder.findColumnIndex(chosenTable, header));
             }
 
@@ -43,14 +52,13 @@ public class Select {
             server.setTableForPrinting(selectedColumns);
             server.setPrintBoolean(true);
         }
+        return true;
     }
 
     public List<String> formatOutputTable(List<List<String>> tableList, List<String> headers, List<Integer> chosenRows) {
 
         List<String> formattedRows = new ArrayList<String>();
         formattedRows.add("\n" + String.join("\t", headers) + "\n");
-
-        int rowIndex = 0;
 
         if (printAllRows) {
             for (List<String> row : tableList) {

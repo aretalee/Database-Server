@@ -11,14 +11,15 @@ import java.util.List;
 public class Insert {
 
 
-    public boolean insertIntoTable(DBServer server, Table chosenTable, List<String> valueParameters) throws IOException {
+    public boolean insertIntoTable(DBServer server, Table chosenTable, List<String> valueParameters) {
 
-        if (chosenTable.accessColumnHeaders().size() == 1) {
+        if (chosenTable == null) {
+            server.setErrorLine("Requested table does not exist.");
+            return false;
+        } else if (chosenTable.accessColumnHeaders().size() == 1) {
             server.setErrorLine("Please insert at least one column header to the table using ALTER.");
             return false;
-        }
-
-        if (valueParameters.size() != chosenTable.accessColumnHeaders().size() - 1) {
+        } else if (valueParameters.size() != chosenTable.accessColumnHeaders().size() - 1) {
             server.setErrorLine("Must insert " + (chosenTable.accessColumnHeaders().size() - 1)
                     + " values but you have inputted " + valueParameters.size() + " .");
             return false;
@@ -28,7 +29,10 @@ public class Insert {
         valueParameters.add(0, String.valueOf(rowID));
         chosenTable.accessTable().add(valueParameters);
 
-        chosenTable.saveToFile(chosenTable.getTableFile());
+        if (!chosenTable.saveToFile(chosenTable.getTableFile(), server)) {
+            server.setErrorLine("Could not insert values into table, please try again.");
+            return false;
+        }
 
         return true;
     }

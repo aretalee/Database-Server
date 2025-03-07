@@ -10,7 +10,7 @@ public class Drop {
         File file = new File(filePath);
 
         if (!file.exists()) {
-            server.setErrorLine("The file " + file.getName() + " does not exist");
+            server.setErrorLine("The database/table does not exist");
             return false;
         }
         if (file.isDirectory()) {
