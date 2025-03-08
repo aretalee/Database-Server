@@ -3,7 +3,7 @@ package edu.uob;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConditionHandler {
+public class ConditionHandlerNewVersion {
 
     public List<Integer> filterTable(Table chosenTable, List<List<String>> conditions, DBServer server) {
 
@@ -11,36 +11,35 @@ public class ConditionHandler {
             return null;
         }
 
-        List<List<Integer>> comparisonResults = new ArrayList<List<Integer>>();
+        List<List<List<Integer>>> comparisonResults = new ArrayList<List<List<Integer>>>();
 
         for (List<String> condition : conditions) {
             System.out.println(condition);
         }
 
-            // comparisons organised in trios
+        // comparisons organised in trios
         for (int condIndex = 0; condIndex < conditions.size() - 1; condIndex++) {
-            List<Integer> tempList = new ArrayList<Integer>();
+            List<List<Integer>> tempList = new ArrayList<List<Integer>>();
             for (int itemIndex = 0; itemIndex < conditions.get(condIndex).size() - 1; itemIndex++) {
                 if (itemIndex % 3 == 0) {
                     String attribute = conditions.get(condIndex).get(itemIndex);
                     String comparator = conditions.get(condIndex).get(itemIndex + 1);
                     String value = conditions.get(condIndex).get(itemIndex + 2);
-                    System.out.println(attribute + " " + comparator + " " + value);
-                    // tempList.add(evaluateCondition(chosenTable, attribute, comparator, value, server));
-                    tempList = evaluateCondition(chosenTable, tempList, attribute, comparator, value, server);
+                    tempList.add(evaluateCondition(chosenTable, attribute, comparator, value));
                 }
             }
             comparisonResults.add(tempList);
         }
 
-        for (List<Integer> condition : comparisonResults) {
+        for (List<List<Integer>> condition : comparisonResults) {
             System.out.println(condition + "\n");
         }
 
+        System.out.println(conditions.get(conditions.size() - 1));
         if (conditions.get(conditions.size() - 1).isEmpty()) {
-            return comparisonResults.get(0);
+            return comparisonResults.get(0).get(0);
         } else {
-            return combineResults(comparisonResults, conditions.get(conditions.size() - 1));
+            return combineAllResults(comparisonResults, conditions.get(conditions.size() - 1));
         }
     }
 
@@ -53,13 +52,24 @@ public class ConditionHandler {
         return true;
     }
 
-    public List<Integer> combineResults(List<List<Integer>> allResults, List<String> boolOperators) {
-        List<Integer> tempList = allResults.get(0);
+    public List<Integer> combineAllResults(List<List<List<Integer>>> allResults, List<String> boolOperators) {
+        List<List<Integer>> combinedLists = allResults.get(0);
         int boolIndex = 0;
 
-        for (int index = 1; index < allResults.size(); index++) {
-            if (!tempList.isEmpty() && !allResults.get(index).isEmpty() && (boolIndex <= boolOperators.size())) {
-                tempList = editLists(tempList, allResults.get(index), boolOperators.get(boolIndex));
+        for (List<List<Integer>> result : allResults) {
+            combinedLists.add(combineResultLayer(result, boolOperators));
+        }
+
+        return combineResultLayer(combinedLists, boolOperators);
+    }
+
+    public List<Integer> combineResultLayer(List<List<Integer>> result, List<String> boolOperators) {
+        List<Integer> tempList = result.get(0);
+        int boolIndex = 0;
+
+        for (int index = 1; index < result.size(); index++) {
+            if (!tempList.isEmpty() && !result.get(index).isEmpty() && (boolIndex <= boolOperators.size())) {
+                tempList = editLists(tempList, result.get(index), boolOperators.get(boolIndex));
                 boolIndex++;
             }
         }
@@ -80,13 +90,13 @@ public class ConditionHandler {
     }
 
 
-    public List<Integer> evaluateCondition(Table chosenTable, List<Integer> currentList, String attribute, String comparator, String value, DBServer server) {
+    public List<Integer> evaluateCondition(Table chosenTable, String attribute, String comparator, String value) {
+        List<Integer> currentList = new ArrayList<Integer>();
 
         if (!chosenTable.accessColumnHeaders().contains(attribute)) {
-            server.setErrorLine("Requested column does not exist.");
-            List<Integer> invalidList = new ArrayList<Integer>();
-            invalidList.add(-1);
-            return invalidList;
+//            server.setErrorLine("Requested column does not exist.");
+            currentList.add(-1);
+            return currentList;
         }
         int headerIndex = ColumnIndexFinder.findColumnIndex(chosenTable, attribute);
         for (List<String> row : chosenTable.accessTable()) {
@@ -128,8 +138,3 @@ public class ConditionHandler {
     }
 
 }
-
-
-
-
-

@@ -20,7 +20,7 @@ public class Drop {
                 file = clearDirectory(file, fileList, server);
                 server.removeDatabase(file.getName());
             }
-        } else { server.removeTable(file.getName()); }
+        } else { server.removeTable(file.getName(), server.getCurrentDatabase()); }
 
         quickDrop(file, server);
         return true;

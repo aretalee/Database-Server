@@ -37,7 +37,7 @@ public class Create {
 
         }
 
-        Table newTable = new Table(newFile, attributeList);
+        Table newTable = new Table(newFile, attributeList, server.getCurrentDatabase());
         server.addTable(newTable);
 
         if (!newTable.saveToFile(newFile, server)) {

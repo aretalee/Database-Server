@@ -85,7 +85,7 @@ public class FileHandler {
         if (databaseFolder != null) {
             for (File tableFile : databaseFolder) {
                 List<String> attributeList = new ArrayList<String>();
-                Table thisTable = new Table(tableFile, attributeList);
+                Table thisTable = new Table(tableFile, attributeList, databaseName);
                 if (!thisTable.loadTableData()) {
                     return false;
                 }

@@ -18,7 +18,7 @@ public class Update {
         }
 
         ConditionHandler conditionHandler = new ConditionHandler();
-        List<Integer> rowsToUpdate = conditionHandler.filterTable(chosenTable, conditionList);
+        List<Integer> rowsToUpdate = conditionHandler.filterTable(chosenTable, conditionList, server);
         List<List<String>> tableList = chosenTable.accessTable();
 
         if (!editValues(chosenTable, tableList, nameValueList, rowsToUpdate, server)) {
@@ -45,7 +45,10 @@ public class Update {
                         server.setErrorLine("Cannot update id column.");
                         return false;
                     } else if (!table.accessColumnHeaders().contains(headerName)) {
-                        server.setErrorLine("Requested column does not exist.");
+                        server.setErrorLine("Requested column(s) in SET does not exist.");
+                        return false;
+                    } else if (index == -1) {
+                        server.setErrorLine("Requested column(s) in condition does not exist.");
                         return false;
                     }
 

@@ -14,6 +14,8 @@ public class Join {
 //    if (chosenTable == null) {
 //        server.setErrorLine("Requested table does not exist.");
 //        return false;
+//    } else if (!table.accessColumnHeaders().contains(headerName) || !table.accessColumnHeaders().contains(headerNameTwo)) {
+//        server.setErrorLine("Requested column(s) in SET does not exist.");
+//        return false;
 //    }
-
 }

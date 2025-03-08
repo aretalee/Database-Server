@@ -107,9 +107,10 @@ public class DBServer {
         allTables.add(table);
     }
 
-    public void removeTable(String tableName) {
+    public void removeTable(String tableName, String databaseName) {
         // should I make it null first?
-        allTables.removeIf(table -> table.getTableName().equals(tableName));
+        allTables.removeIf(table -> table.getWhichDatabase().equalsIgnoreCase(databaseName)
+                && table.getTableName().equals(tableName));
     }
 
     public void addDatabase(Database database) {
@@ -132,11 +133,12 @@ public class DBServer {
         this.currentDatabase = currentDatabase;
     }
 
-    public Table getTable(String tableName) {
+    public Table getTable(String tableName, String databaseName) {
        Table toBeReturned = null;
 
         for (Table currentTable: this.allTables) {
-           if (currentTable.getTableName().equalsIgnoreCase(tableName + ".tab")) {
+           if (currentTable.getWhichDatabase().equalsIgnoreCase(databaseName)
+                   && currentTable.getTableName().equalsIgnoreCase(tableName + ".tab")) {
                toBeReturned = currentTable;
            }
        }

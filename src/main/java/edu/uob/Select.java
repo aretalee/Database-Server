@@ -7,22 +7,23 @@ public class Select {
 
     private boolean printAllRows = false;
 
-    public boolean selectRecords(DBServer server, Table chosenTable, List<String> chosenHeaders, List<List<String>> conditionList) {
+    public boolean selectRecords(Table chosenTable, List<String> chosenHeaders, List<List<String>> conditionList, DBServer server) {
 
         if (chosenTable == null) {
             server.setErrorLine("Requested table does not exist.");
             return false;
         }
 
-        ConditionHandler conditionHandler = new ConditionHandler();
-        List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList);
+        ConditionHandlerNewVersion conditionHandler = new ConditionHandlerNewVersion();
+        List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList, server);
 
         if (conditionHandler.isConditionListEmpty(conditionList)) {
             printAllRows = true;
-        }
+        } else if (nonExistentColumn(rowsToSelect, server)) { return false; }
 
         if (chosenHeaders.get(0).equals("*")) {
-            List<String> allColumns = formatOutputTable(chosenTable.accessTable(), chosenTable.accessColumnHeaders(), rowsToSelect);
+            List<String> allColumns = formatOutputTable(chosenTable.accessTable(),
+                    chosenTable.accessColumnHeaders(), rowsToSelect);
             server.setTableForPrinting(allColumns);
             server.setPrintBoolean(true);
 
@@ -53,6 +54,16 @@ public class Select {
             server.setPrintBoolean(true);
         }
         return true;
+    }
+
+    public boolean nonExistentColumn(List<Integer> chosenRows, DBServer server) {
+        for (Integer index : chosenRows) {
+            if (index == -1) {
+                server.setErrorLine("Requested column(s) in condition does not exist.");
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<String> formatOutputTable(List<List<String>> tableList, List<String> headers, List<Integer> chosenRows) {

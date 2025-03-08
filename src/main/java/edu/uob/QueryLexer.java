@@ -20,7 +20,7 @@ public class QueryLexer{
 
     public static void main(String args[]) {
 
-        String newQuery = "SELECT * FROM STUDENTS WHERE AGE>=10 AND MARK!=70;";
+        String newQuery = "insert into marks values ('Tim' 80., TRUE);";
         QueryLexer lexer = new QueryLexer(newQuery);
         lexer.setup();;
         for (String token : lexer.tokens) {
@@ -39,8 +39,7 @@ public class QueryLexer{
         String[] fragments = query.split("'");
         for (int i = 0; i < fragments.length; i++) {
             // Every other fragment is a string literal, so just add it straight to "result" token list
-//            if (i%2 != 0) tokens.add("'" + fragments[i] + "'");
-            if (i % 2 != 0) tokens.add(fragments[i]);
+            if (i%2 != 0) tokens.add("'" + fragments[i] + "'");
                 // If it's not a string literal, it must be query text (which needs further processing)
             else {
                 // Tokenise the fragment into an array of strings - this is the "clever" bit !

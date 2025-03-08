@@ -18,17 +18,21 @@ public class Delete {
         }
 
         ConditionHandler conditionHandler = new ConditionHandler();
-        List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList);
+        List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList, server);
         List<List<String>> tableList = chosenTable.accessTable();
 
         if (!rowsToDelete.isEmpty()) {
             for (Integer index : rowsToDelete) {
+                if (index == -1) {
+                    server.setErrorLine("Requested column(s) in condition does not exist.");
+                    return false;
+                }
                 List<String> row = tableList.get(index);
                 tableList.remove(row);
             }
         }
 
-        if (chosenTable.saveToFile(chosenTable.getTableFile(), server)) {
+        if (!chosenTable.saveToFile(chosenTable.getTableFile(), server)) {
             server.setErrorLine("Could not delete record, please try again.");
             return false;
         }

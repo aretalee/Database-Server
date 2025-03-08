@@ -6,11 +6,11 @@ import java.util.List;
 
 public class Table {
 
-    // figure out List ArrayList thing
     private List<List<String>> tableList;
     private List<String> columnHeaders;
     private File tableFile;
     private String tableName;
+    private String inWhichDatabase;
     // File object or use file path?
     private int latestID;
 
@@ -19,7 +19,7 @@ public class Table {
 
     // is there a way to format table so that this list isn't needed
     // maybe move attributeList out of constructor?
-    public Table(File newTableFile, List<String> attributeList) {
+    public Table(File newTableFile, List<String> attributeList, String databaseName) {
 
         tableList = new ArrayList<List<String>>();
         columnHeaders = new ArrayList<String>();
@@ -27,6 +27,7 @@ public class Table {
 
         tableFile = newTableFile;
         tableName = tableFile.getName();
+        inWhichDatabase = databaseName;
         setID();
 
     }
@@ -43,6 +44,10 @@ public class Table {
 
     public String getTableName() {
         return tableName;
+    }
+
+    public String getWhichDatabase() {
+        return inWhichDatabase;
     }
 
     public List<List<String>> accessTable() {
