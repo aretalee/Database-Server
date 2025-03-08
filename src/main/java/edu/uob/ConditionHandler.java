@@ -106,6 +106,10 @@ public class ConditionHandler {
         if (comparator.equalsIgnoreCase("like")) {
             return currentRow.get(index).contains(value);
         } else if (comparator.equals("==")) {
+            System.out.print(value);
+            if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+                return currentRow.get(index).equalsIgnoreCase(value);
+            }
             return currentRow.get(index).equals(value);
         } else if (comparator.equals("!=")) {
             return !currentRow.get(index).equals(value);

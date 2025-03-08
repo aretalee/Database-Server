@@ -68,7 +68,7 @@ public class ConditionHandlerNewVersion {
         int boolIndex = 0;
 
         for (int index = 1; index < result.size(); index++) {
-            if (!tempList.isEmpty() && !result.get(index).isEmpty() && (boolIndex <= boolOperators.size())) {
+            if (!tempList.isEmpty() && !result.get(index).isEmpty() && (boolIndex < boolOperators.size())) {
                 tempList = editLists(tempList, result.get(index), boolOperators.get(boolIndex));
                 boolIndex++;
             }
@@ -116,6 +116,9 @@ public class ConditionHandlerNewVersion {
         if (comparator.equalsIgnoreCase("like")) {
             return currentRow.get(index).contains(value);
         } else if (comparator.equals("==")) {
+            if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+                return currentRow.get(index).equalsIgnoreCase(value);
+            }
             return currentRow.get(index).equals(value);
         } else if (comparator.equals("!=")) {
             return !currentRow.get(index).equals(value);
