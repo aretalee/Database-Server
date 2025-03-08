@@ -333,6 +333,10 @@ public class QueryParser {
         return true;
     }
 
+    public boolean isConditionValid() {
+        
+    }
+
     public List<List<String>> refineConditionList(List<List<String>> conditionList) {
         List<List<String>> refinedList = new ArrayList<List<String>>();
         List<String> boolOperators = new ArrayList<String>();

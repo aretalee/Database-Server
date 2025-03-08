@@ -31,11 +31,10 @@ public class ConditionHandlerNewVersion {
             comparisonResults.add(tempList);
         }
 
-        for (List<List<Integer>> condition : comparisonResults) {
-            System.out.println(condition + "\n");
-        }
+//        for (List<List<Integer>> condition : comparisonResults) {
+//            System.out.println(condition + "\n");
+//        }
 
-        System.out.println(conditions.get(conditions.size() - 1));
         if (conditions.get(conditions.size() - 1).isEmpty()) {
             return comparisonResults.get(0).get(0);
         } else {
@@ -53,28 +52,45 @@ public class ConditionHandlerNewVersion {
     }
 
     public List<Integer> combineAllResults(List<List<List<Integer>>> allResults, List<String> boolOperators) {
-        List<List<Integer>> combinedLists = allResults.get(0);
+//        List<List<Integer>> combinedLists = allResults.get(0);
+        List<List<Integer>> combinedLists = new ArrayList<List<Integer>>();
         int boolIndex = 0;
 
         for (List<List<Integer>> result : allResults) {
-            combinedLists.add(combineResultLayer(result, boolOperators));
+            System.out.println(boolIndex);
+            combinedLists.add(combineResultLayer(result, boolOperators, boolIndex));
+            boolIndex = getCurrentBoolIndex(boolOperators);
         }
 
-        return combineResultLayer(combinedLists, boolOperators);
+        System.out.println("hello");
+        for (List<Integer> result : combinedLists) {
+            System.out.println("Result is " + result);
+        }
+        return combineResultLayer(combinedLists, boolOperators, boolIndex);
     }
 
-    public List<Integer> combineResultLayer(List<List<Integer>> result, List<String> boolOperators) {
+    public int getCurrentBoolIndex(List<String> boolOperators) {
+        for (String operator : boolOperators) {
+            if (!operator.equals("")) {
+                return boolOperators.indexOf(operator);
+            }
+        }
+        return -1;
+    }
+
+    public List<Integer> combineResultLayer(List<List<Integer>> result, List<String> boolOperators, int boolIndex) {
         List<Integer> tempList = result.get(0);
-        int boolIndex = 0;
 
         for (int index = 1; index < result.size(); index++) {
             if (!tempList.isEmpty() && !result.get(index).isEmpty() && (boolIndex < boolOperators.size())) {
                 tempList = editLists(tempList, result.get(index), boolOperators.get(boolIndex));
+                boolOperators.set(boolIndex, "");
                 boolIndex++;
             }
         }
 
         tempList.sort(null);
+        System.out.println("temp list is " + tempList);
         return tempList;
     }
 
