@@ -18,7 +18,7 @@ public class Update {
             return false;
         }
 
-        if (!chosenTable.saveToFile(chosenTable.getTableFile(), server)) {
+        if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
             server.setErrorLine("Could not update table, please try again.");
             return false;
         }

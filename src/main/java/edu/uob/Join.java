@@ -35,16 +35,18 @@ public class Join {
         // create new TABLE object for temp storage (if like SQL only need to generate output and no need so save?)
         // make headers first (need to append OG table name)
         List<String> headerList = new ArrayList<>();
+        headerList.add("id");
         for (String header : tableOne.accessColumnHeaders()) {
             if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attributeOne)) {
-                headerList.add(tableOne.getTableName() + "." + header);
+                headerList.add(tableOne.getTableName().replace(".tab", "") + "." + header);
             }
         }
         for (String header : tableTwo.accessColumnHeaders()) {
             if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attributeTwo)) {
-                headerList.add(tableTwo.getTableName() + "." + header);
+                headerList.add(tableTwo.getTableName().replace(".tab", "") + "." + header);
             }
         }
+
         Table jointTable = new Table(null, headerList, "none");
         int headerIndexOne = tableOne.getHeaderIndex(attributeOne);
         int headerIndexTwo = tableTwo.getHeaderIndex(attributeTwo);
@@ -55,17 +57,19 @@ public class Join {
 
         List<String> tableOneValues = getAttributeValues(tableOne, headerIndexOne);
         List<String> tableTwoValues = getAttributeValues(tableTwo, headerIndexTwo);
+        Insert insert = new Insert();
 
-        for (String tableOneValue : tableOneValues) {
-            for (String tableTwoValue : tableTwoValues) {
+//        for (String tableOneValue : tableOneValues) {
+            for (String tableValue : tableOneValues) {
+                System.out.println(tableValue);
                 List<String> thisRow = new ArrayList<String>();
-                if (tableOneValues.contains(tableTwoValue)) {
-                    thisRow = addNewValues(tableOne.getTableRow(tableOneValues.indexOf(tableOneValue)), thisRow, headerIndexOne);
-                    thisRow = addNewValues(tableTwo.getTableRow(tableTwoValues.indexOf(tableTwoValue)), thisRow, headerIndexTwo);
+                if (tableOneValues.contains(tableValue)) {
+                    thisRow = addNewValues(tableOne.getTableRow(tableOneValues.indexOf(tableValue)), thisRow, headerIndexOne);
+                    thisRow = addNewValues(tableTwo.getTableRow(tableTwoValues.indexOf(tableValue)), thisRow, headerIndexTwo);
                 }
-                jointTable.addToTableList(thisRow);
+                insert.insertIntoTable(server, jointTable, thisRow);
             }
-        }
+//        }
 
         System.out.println(jointTable.accessTable());
 
@@ -82,8 +86,6 @@ public class Join {
         List<String> columnValues = new ArrayList<String>();
 
         for (List<String> row : table.accessTable()) {
-            System.out.println(row);
-            System.out.println(row.get(headerColumnIndex));
             columnValues.add(row.get(headerColumnIndex));
         }
 
@@ -93,7 +95,7 @@ public class Join {
     public List<String> addNewValues(List<String> chosenRow, List<String> newRow, int headerIndex) {
 
         for (String item : chosenRow) {
-            if (chosenRow.indexOf(item) != 1 && chosenRow.indexOf(item) != headerIndex) {
+            if (chosenRow.indexOf(item) != 0 && chosenRow.indexOf(item) != headerIndex) {
                 newRow.add(item);
             }
         }

@@ -29,7 +29,7 @@ public class FileHandler {
                 lineCounter++;
             }
             bufferedReader.close();
-        } catch (IOException e) {
+        } catch (NullPointerException | IOException e) {
             return false;
         }
         return true;
@@ -57,7 +57,7 @@ public class FileHandler {
 
             bufferedWriter.close();
 
-        } catch (IOException e) {
+        } catch (NullPointerException | IOException e) {
             return false;
         }
         return true;

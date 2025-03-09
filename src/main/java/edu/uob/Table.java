@@ -131,7 +131,7 @@ public class Table {
     }
 
 
-    public boolean saveToFile(File file, DBServer server) {
+    public boolean saveToFile(File file) {
         FileHandler fileHandler = new FileHandler();
         return fileHandler.writeTableToFile(file, this);
     }

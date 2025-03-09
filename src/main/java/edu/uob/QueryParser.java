@@ -457,7 +457,7 @@ public class QueryParser {
             } else if (((i == token.length() - 1) || (i == 1 && (token.charAt(0) == '+' || token.charAt(0) == '-')) )
                     && !Character.isDigit(token.charAt(i))) {
                 isNumber =  false;
-            } else if (!Character.isDigit(token.charAt(i)) && token.charAt(i) != '.') {
+            } else if (i != 0 && !Character.isDigit(token.charAt(i)) && token.charAt(i) != '.') {
                 isNumber =  false;
             }
         }

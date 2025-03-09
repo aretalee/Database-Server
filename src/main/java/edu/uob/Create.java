@@ -40,7 +40,7 @@ public class Create {
         Table newTable = new Table(newFile, attributeList, server.getCurrentDatabase());
         server.addTable(newTable);
 
-        if (!newTable.saveToFile(newFile, server)) {
+        if (!newTable.saveToFile(newFile)) {
             server.setErrorLine("Could not create table, please try again.");
             return false;
         }

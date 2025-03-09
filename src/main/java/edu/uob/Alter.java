@@ -23,7 +23,7 @@ public class Alter {
             }
         }
 
-        if (!chosenTable.saveToFile(chosenTable.getTableFile(), server)) {
+        if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
             server.setErrorLine("Could not alter table, please try again.");
             return false;
         }

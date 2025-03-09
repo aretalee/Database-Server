@@ -29,7 +29,7 @@ public class Insert {
         valueParameters.add(0, String.valueOf(rowID));
         chosenTable.addToTableList(valueParameters);
 
-        if (!chosenTable.saveToFile(chosenTable.getTableFile(), server)) {
+        if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
             server.setErrorLine("Could not insert values into table, please try again.");
             return false;
         }

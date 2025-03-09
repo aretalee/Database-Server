@@ -31,7 +31,7 @@ public class Delete {
             chosenTable.removeFromTableList(row);
         }
 
-        if (!chosenTable.saveToFile(chosenTable.getTableFile(), server)) {
+        if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
             server.setErrorLine("Could not delete record, please try again.");
             return false;
         }
