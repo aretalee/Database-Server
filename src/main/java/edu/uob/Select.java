@@ -14,12 +14,12 @@ public class Select {
             return false;
         }
 
-        ConditionHandlerNewVersion conditionHandler = new ConditionHandlerNewVersion();
+        ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList, server);
 
         if (conditionHandler.isConditionListEmpty(conditionList)) {
             printAllRows = true;
-        } else if (nonExistentColumn(rowsToSelect, server)) { return false; }
+        } else if (!rowsToSelect.isEmpty() && rowsToSelect.get(0) == -1) { return false; }
 
         if (chosenHeaders.get(0).equals("*")) {
             List<String> allColumns = formatOutputTable(chosenTable.accessTable(),
@@ -32,7 +32,7 @@ public class Select {
             List<List<String>> toBePrinted = new ArrayList<List<String>>();
 
             for (String header : chosenHeaders) {
-                if (!chosenTable.accessColumnHeaders().contains(header)) {
+                if (!chosenTable.hasRequestedHeader(header)) {
                     server.setErrorLine("Requested column does not exist.");
                     return false;
                 }
@@ -54,16 +54,6 @@ public class Select {
             server.setPrintBoolean(true);
         }
         return true;
-    }
-
-    public boolean nonExistentColumn(List<Integer> chosenRows, DBServer server) {
-        for (Integer index : chosenRows) {
-            if (index == -1) {
-                server.setErrorLine("Requested column(s) in condition does not exist.");
-                return true;
-            }
-        }
-        return false;
     }
 
     public List<String> formatOutputTable(List<List<String>> tableList, List<String> headers, List<Integer> chosenRows) {

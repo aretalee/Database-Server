@@ -10,41 +10,46 @@ public class ConditionHandler {
         if (isConditionListEmpty(conditions)) {
             return null;
         }
-
-        List<List<Integer>> comparisonResults = new ArrayList<List<Integer>>();
+        List<List<List<Integer>>> comparisonResults = new ArrayList<List<List<Integer>>>();
 
         for (List<String> condition : conditions) {
             System.out.println(condition);
         }
 
-            // comparisons organised in trios
         for (int condIndex = 0; condIndex < conditions.size() - 1; condIndex++) {
-            List<Integer> tempList = new ArrayList<Integer>();
+            List<List<Integer>> tempList = new ArrayList<List<Integer>>();
             for (int itemIndex = 0; itemIndex < conditions.get(condIndex).size() - 1; itemIndex++) {
                 if (itemIndex % 3 == 0) {
                     String attribute = conditions.get(condIndex).get(itemIndex);
                     String comparator = conditions.get(condIndex).get(itemIndex + 1);
                     String value = conditions.get(condIndex).get(itemIndex + 2);
-                    System.out.println(attribute + " " + comparator + " " + value);
-                    // tempList.add(evaluateCondition(chosenTable, attribute, comparator, value, server));
-                    tempList = evaluateCondition(chosenTable, tempList, attribute, comparator, value, server);
+
+                    List<Integer> validRows = evaluateCondition(chosenTable, attribute, comparator, value);
+                    if (!validRows.isEmpty() && validRows.get(0) == -1) {
+                        server.setErrorLine("Requested column in conditions does not exist.");
+                        return validRows;
+                    }
+                    tempList.add(validRows);
                 }
             }
             comparisonResults.add(tempList);
         }
 
-        for (List<Integer> condition : comparisonResults) {
-            System.out.println(condition + "\n");
+        for (List<List<Integer>> condition : comparisonResults) {
+            System.out.println(condition);
         }
 
         if (conditions.get(conditions.size() - 1).isEmpty()) {
-            return comparisonResults.get(0);
+            return comparisonResults.get(0).get(0);
         } else {
-            return combineResults(comparisonResults, conditions.get(conditions.size() - 1));
+            return combineAllResults(comparisonResults, conditions.get(conditions.size() - 1));
         }
     }
 
     public boolean isConditionListEmpty(List<List<String>> conditions) {
+        if (conditions == null) {
+            return true;
+        }
         for (List<String> condition : conditions) {
             if (!condition.isEmpty()) {
                 return false;
@@ -53,13 +58,42 @@ public class ConditionHandler {
         return true;
     }
 
-    public List<Integer> combineResults(List<List<Integer>> allResults, List<String> boolOperators) {
-        List<Integer> tempList = allResults.get(0);
+    public List<Integer> combineAllResults(List<List<List<Integer>>> allResults, List<String> boolOperators) {
+        List<List<Integer>> combinedLists = new ArrayList<List<Integer>>();
         int boolIndex = 0;
 
-        for (int index = 1; index < allResults.size(); index++) {
-            if (!tempList.isEmpty() && !allResults.get(index).isEmpty() && (boolIndex <= boolOperators.size())) {
-                tempList = editLists(tempList, allResults.get(index), boolOperators.get(boolIndex));
+        for (List<List<Integer>> result : allResults) {
+            if (boolIndex != -1) {
+                combinedLists.add(combineResultLayer(result, boolOperators, boolIndex));
+                boolIndex = getCurrentBoolIndex(boolOperators);
+            }
+        }
+
+        for (List<Integer> result : combinedLists) {
+            System.out.println("Result is " + result);
+        }
+        return combineResultLayer(combinedLists, boolOperators, boolIndex);
+    }
+
+    public int getCurrentBoolIndex(List<String> boolOperators) {
+        for (String operator : boolOperators) {
+            if (!operator.equals("")) {
+                return boolOperators.indexOf(operator);
+            }
+        }
+        return -1;
+    }
+
+    public List<Integer> combineResultLayer(List<List<Integer>> result, List<String> boolOperators, int boolIndex) {
+        List<Integer> tempList = result.get(0);
+
+        for (int index = 1; index < result.size(); index++) {
+            if (!tempList.isEmpty() && !result.get(index).isEmpty() && (boolIndex < boolOperators.size())) {
+                System.out.println("Temp list is " + tempList);
+                System.out.println("Operator is " + boolOperators.get(boolIndex));
+                tempList = editLists(tempList, result.get(index), boolOperators.get(boolIndex));
+                System.out.println("New temp list is " + tempList);
+                boolOperators.set(boolIndex, "");
                 boolIndex++;
             }
         }
@@ -80,18 +114,17 @@ public class ConditionHandler {
     }
 
 
-    public List<Integer> evaluateCondition(Table chosenTable, List<Integer> currentList, String attribute, String comparator, String value, DBServer server) {
+    public List<Integer> evaluateCondition(Table chosenTable, String attribute, String comparator, String value) {
+        List<Integer> currentList = new ArrayList<Integer>();
 
-        if (!chosenTable.accessColumnHeaders().contains(attribute)) {
-            server.setErrorLine("Requested column does not exist.");
-            List<Integer> invalidList = new ArrayList<Integer>();
-            invalidList.add(-1);
-            return invalidList;
+        if (!chosenTable.hasRequestedHeader(attribute)) {
+            currentList.add(-1);
+            return currentList;
         }
         int headerIndex = ColumnIndexFinder.findColumnIndex(chosenTable, attribute);
         for (List<String> row : chosenTable.accessTable()) {
             if (compareValue(row, headerIndex, comparator, value)) {
-                currentList.add(chosenTable.accessTable().indexOf(row));
+                currentList.add(chosenTable.getTableIndex(row));
             }
         }
         return currentList;
@@ -106,7 +139,6 @@ public class ConditionHandler {
         if (comparator.equalsIgnoreCase("like")) {
             return currentRow.get(index).contains(value);
         } else if (comparator.equals("==")) {
-            System.out.print(value);
             if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                 return currentRow.get(index).equalsIgnoreCase(value);
             }
@@ -132,8 +164,3 @@ public class ConditionHandler {
     }
 
 }
-
-
-
-
-

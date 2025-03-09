@@ -208,7 +208,8 @@ public class QueryParser {
                 server.setErrorLine("Invalid query term.");
                 return false;
             }
-            if (!parseCondition(server, query, index + 1, conditionList)) {
+            if (!isConditionValid(server, query, index + 1)
+                    || !parseCondition(server, query, index + 1, conditionList)) {
                 return false;
             }
         }
@@ -242,7 +243,8 @@ public class QueryParser {
         index++;
 
         List<List<String>> conditionList = new ArrayList<>();
-        if (!parseCondition(server, query, index, conditionList)) {
+        if (!isConditionValid(server, query, index)
+                || !parseCondition(server, query, index, conditionList)) {
             return false;
         }
 
@@ -262,7 +264,8 @@ public class QueryParser {
         String tableName = query.get(2).toLowerCase();
 
         List<List<String>> conditionList = new ArrayList<>();
-        if (!parseCondition(server, query, 4, conditionList)) {
+        if (!isConditionValid(server, query, 4)
+                || !parseCondition(server, query, 4, conditionList)) {
             return false;
         }
 
@@ -291,23 +294,43 @@ public class QueryParser {
         String attributeNameTwo = query.get(7);
 
         Join join = new Join();
+        return join.joinTables(server.getTable(fileNameOne, server.getCurrentDatabase()),
+                server.getTable(fileNameTwo, server.getCurrentDatabase()), attributeNameOne, attributeNameTwo, server);
 
-        return true;
     }
 
     public boolean parseCondition(DBServer server, List<String> query, int startIndex, List<List<String>> conditionList) {
-        String[] comparators = {"==", ">", "<", ">=", "<=", "!=", "LIKE"};
-
         List<String> precedence = new ArrayList<String>();
-        List<String> conditionsOnlyQuery = query.subList(startIndex, query.size());
-        conditionsOnlyQuery.removeAll(Collections.singleton(")"));
-//        System.out.print(conditionsOnlyQuery + "\n");
 
-        for (int i = 0; i < conditionsOnlyQuery.size(); i++) {
-            String currentToken = conditionsOnlyQuery.get(i);
-                if (currentToken.equals("(")) {
-                parseCondition(server, conditionsOnlyQuery, i + 1, conditionList);
-            } else if (!currentToken.equals(";") && !currentToken.equals(" ")) {
+        for (int i = startIndex; i < query.size(); i++) {
+            String currentToken = query.get(i);
+            if (currentToken.equals(")")) {
+                query.set(i, " ");
+                break; // see if there is workaround (avoid using break if possible)
+            }
+            if (currentToken.equals("(")) {
+                parseCondition(server, query, i + 1, conditionList);
+            }
+            if (!currentToken.equals("(") && !currentToken.equals(";") && !currentToken.equals(" ")) {
+                precedence.add(currentToken);
+            }
+            query.set(i, " ");
+        }
+        conditionList.add(precedence);
+        return true;
+    }
+
+    public boolean isConditionValid(DBServer server, List<String> query, int startIndex) {
+        String[] comparators = {"==", ">", "<", ">=", "<=", "!=", "LIKE"};
+        List<String> trimmedQuery = (new ArrayList<String>(query)).subList(startIndex, query.size());
+
+        trimmedQuery.removeAll(Collections.singleton("("));
+        trimmedQuery.removeAll(Collections.singleton(")"));
+        trimmedQuery.removeAll(Collections.singleton(";"));
+
+        for (int i = 0; i < trimmedQuery.size(); i++) {
+            String currentToken = trimmedQuery.get(i);
+            if (!currentToken.equals(";") && !currentToken.equals(" ")) {
                 if (((i - 1) % 4) == 0 && !isTokenComparator(currentToken, comparators)) {
                     server.setErrorLine("Please use correct comparator.");
                     return false; }
@@ -324,17 +347,9 @@ public class QueryParser {
                         && isThereReservedWord(currentToken))) {
                     server.setErrorLine("Invalid attribute name.");
                     return false; }
-                precedence.add(currentToken);
             }
-            conditionsOnlyQuery.set(i, " ");
         }
-//        System.out.println("Adding " + precedence + "\n");
-        conditionList.add(precedence);
         return true;
-    }
-
-    public boolean isConditionValid() {
-        
     }
 
     public List<List<String>> refineConditionList(List<List<String>> conditionList) {

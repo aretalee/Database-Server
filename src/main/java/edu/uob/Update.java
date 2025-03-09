@@ -1,11 +1,5 @@
 package edu.uob;
 
-import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.file.Paths;
-import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Update {
@@ -19,9 +13,8 @@ public class Update {
 
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToUpdate = conditionHandler.filterTable(chosenTable, conditionList, server);
-        List<List<String>> tableList = chosenTable.accessTable();
 
-        if (!editValues(chosenTable, tableList, nameValueList, rowsToUpdate, server)) {
+        if (!editValues(chosenTable, nameValueList, rowsToUpdate, server)) {
             return false;
         }
 
@@ -32,7 +25,7 @@ public class Update {
         return true;
     }
 
-    public boolean editValues(Table table, List<List<String>> tableList, List<String> nameValueList, List<Integer> rowsToUpdate, DBServer server) {
+    public boolean editValues(Table table, List<String> nameValueList, List<Integer> rowsToUpdate, DBServer server) {
         int attributeIndex = 0;
         int valueIndex = 1;
 
@@ -44,7 +37,7 @@ public class Update {
                     if (headerName.equalsIgnoreCase("id")) {
                         server.setErrorLine("Cannot update id column.");
                         return false;
-                    } else if (!table.accessColumnHeaders().contains(headerName)) {
+                    } else if (!table.hasRequestedHeader(headerName)) {
                         server.setErrorLine("Requested column(s) in SET does not exist.");
                         return false;
                     } else if (index == -1) {
@@ -52,8 +45,9 @@ public class Update {
                         return false;
                     }
 
-                    int headerIndex = table.accessColumnHeaders().indexOf(headerName);
-                    tableList.get(index).set(headerIndex, nameValueList.get(valueIndex));
+                    int headerIndex = table.getHeaderIndex(headerName);
+//                    tableList.get(index).set(headerIndex, nameValueList.get(valueIndex));
+                    table.updateRowValue(index, headerIndex, nameValueList.get(valueIndex));
                     attributeIndex += 2;
                     valueIndex += 2;
                 }

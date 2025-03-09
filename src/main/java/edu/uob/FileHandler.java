@@ -20,11 +20,11 @@ public class FileHandler {
                 String[] splitLine = currentLine.split("\t");
                 if(lineCounter == 1) {
                     for(String item : splitLine) {
-                        currentTable.accessColumnHeaders().add(item);
+                        currentTable.addToColumnHeaders(item);
                     }
                 } else {
                     List<String> thisRow = new ArrayList<String>(Arrays.asList(splitLine));
-                    currentTable.accessTable().add(thisRow);
+                    currentTable.addToTableList(thisRow);
                 }
                 lineCounter++;
             }
@@ -69,7 +69,7 @@ public class FileHandler {
         if (storageFolder != null && storageFolder.length > 0) {
             for (File databaseFile : storageFolder) {
                 Database thisDatabase = new Database(databaseFile);
-                server.getAllDatabases().add(thisDatabase);
+                server.addDatabase(thisDatabase);
                 if (!addTableObjects(server, thisDatabase.getDatabaseName())) {
                     return false;
                 }
@@ -89,7 +89,7 @@ public class FileHandler {
                 if (!thisTable.loadTableData()) {
                     return false;
                 }
-                server.getAllTables().add(thisTable);
+                server.addTable(thisTable);
             }
         }
         return true;

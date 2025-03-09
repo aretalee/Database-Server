@@ -36,16 +36,13 @@ public class Alter {
         if (table == null) {
             server.setErrorLine("Requested table does not exist.");
             return false;
-        } else if (table.accessColumnHeaders().contains(header)) {
+        } else if (table.hasRequestedHeader(header)) {
             server.setErrorLine("Column already exists.");
             return false;
         }
 
-        table.accessColumnHeaders().add(header);
-
-        for(List<String> row : table.accessTable()) {
-            row.add(null);
-        }
+        table.addToColumnHeaders(header);
+        table.addNullToRows();
         return true;
     }
 
@@ -60,10 +57,8 @@ public class Alter {
             return false;
         }
 
-        table.accessColumnHeaders().remove(chosenIndex);
-        for (List<String> row : table.accessTable()) {
-            row.remove(chosenIndex);
-        }
+        table.removeFromColumnHeaders(chosenIndex);
+        table.removeTableRow(chosenIndex);
         return true;
     }
 }

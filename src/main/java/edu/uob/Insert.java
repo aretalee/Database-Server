@@ -17,7 +17,7 @@ public class Insert {
             server.setErrorLine("Requested table does not exist.");
             return false;
         } else if (chosenTable.accessColumnHeaders().size() == 1) {
-            server.setErrorLine("Please insert at least one column header to the table using ALTER.");
+            server.setErrorLine("No columns in table, please insert at least one using ALTER.");
             return false;
         } else if (valueParameters.size() != chosenTable.accessColumnHeaders().size() - 1) {
             server.setErrorLine("Must insert " + (chosenTable.accessColumnHeaders().size() - 1)
@@ -27,7 +27,7 @@ public class Insert {
 
         int rowID = chosenTable.getCurrentID();
         valueParameters.add(0, String.valueOf(rowID));
-        chosenTable.accessTable().add(valueParameters);
+        chosenTable.addToTableList(valueParameters);
 
         if (!chosenTable.saveToFile(chosenTable.getTableFile(), server)) {
             server.setErrorLine("Could not insert values into table, please try again.");

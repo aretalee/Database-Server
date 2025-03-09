@@ -1,10 +1,5 @@
 package edu.uob;
 
-import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,38 +16,90 @@ public class Join {
 
 
     // check which rows to join
-    // ensure ordering of tables is same as that of attributes
-    // also need to check if attribute 1 is in table 1 & attribute 2 is in table 2
 
-    public void joinTables(Table tableOne, Table tableTwo) {
+    public boolean joinTables(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo, DBServer server) {
+
+        if (tableOne == null || tableTwo == null) {
+            server.setErrorLine("One or more requested tables do not exist.");
+            return false;
+        }
+
+        // ensure ordering of tables is same as that of attributes
+        // also need to check if attribute 1 is in table 1 & attribute 2 is in table 2
+        if (!tableOne.hasRequestedHeader(attributeOne)
+                || !tableTwo.hasRequestedHeader(attributeTwo)) {
+            server.setErrorLine("One or more attributes do not belong to the corresponding tables.");
+            return false;
+        }
 
         // create new TABLE object for temp storage (if like SQL only need to generate output and no need so save?)
         // make headers first (need to append OG table name)
         List<String> headerList = new ArrayList<>();
         for (String header : tableOne.accessColumnHeaders()) {
-            if (!header.equalsIgnoreCase("id")) {
+            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attributeOne)) {
                 headerList.add(tableOne.getTableName() + "." + header);
             }
         }
         for (String header : tableTwo.accessColumnHeaders()) {
-            if (!header.equalsIgnoreCase("id")) {
+            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attributeTwo)) {
                 headerList.add(tableTwo.getTableName() + "." + header);
             }
         }
-
         Table jointTable = new Table(null, headerList, "none");
-
+        int headerIndexOne = tableOne.getHeaderIndex(attributeOne);
+        int headerIndexTwo = tableTwo.getHeaderIndex(attributeTwo);
 
         // maybe loop through foreign key row in table 2
         // then check table one to see if there's a match
         // if found a match -> add table 1 content first then add table two content behind
 
-        //
+        List<String> tableOneValues = getAttributeValues(tableOne, headerIndexOne);
+        List<String> tableTwoValues = getAttributeValues(tableTwo, headerIndexTwo);
+
+        for (String tableOneValue : tableOneValues) {
+            for (String tableTwoValue : tableTwoValues) {
+                List<String> thisRow = new ArrayList<String>();
+                if (tableOneValues.contains(tableTwoValue)) {
+                    thisRow = addNewValues(tableOne.getTableRow(tableOneValues.indexOf(tableOneValue)), thisRow, headerIndexOne);
+                    thisRow = addNewValues(tableTwo.getTableRow(tableTwoValues.indexOf(tableTwoValue)), thisRow, headerIndexTwo);
+                }
+                jointTable.addToTableList(thisRow);
+            }
+        }
+
+        System.out.println(jointTable.accessTable());
 
         // call SELECT to print them out
+        Select select = new Select();
+        List<String> printAll = new ArrayList<String>();
+        printAll.add("*");
+        select.selectRecords(jointTable, printAll, null, server);
 
+        return true;
     }
 
+    public List<String> getAttributeValues(Table table, int headerColumnIndex) {
+        List<String> columnValues = new ArrayList<String>();
+
+        for (List<String> row : table.accessTable()) {
+            System.out.println(row);
+            System.out.println(row.get(headerColumnIndex));
+            columnValues.add(row.get(headerColumnIndex));
+        }
+
+        return columnValues;
+    }
+
+    public List<String> addNewValues(List<String> chosenRow, List<String> newRow, int headerIndex) {
+
+        for (String item : chosenRow) {
+            if (chosenRow.indexOf(item) != 1 && chosenRow.indexOf(item) != headerIndex) {
+                newRow.add(item);
+            }
+        }
+
+        return newRow;
+    }
 
 
 }

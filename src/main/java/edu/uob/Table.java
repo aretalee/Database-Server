@@ -26,7 +26,9 @@ public class Table {
         columnHeaders.addAll(attributeList);
 
         tableFile = newTableFile;
-        tableName = tableFile.getName();
+        if (tableFile != null) {
+            tableName = tableFile.getName();
+        }
         inWhichDatabase = databaseName;
         setID();
 
@@ -54,8 +56,60 @@ public class Table {
         return tableList;
     }
 
+    public void addToTableList(List<String> row) {
+        tableList.add(row);
+    }
+
+    public void removeFromTableList(List<String> row) {
+        tableList.remove(row);
+    }
+
+    public int getTableIndex(List<String> row) {
+        return tableList.indexOf(row);
+    }
+
+    public List<String> getTableRow(int index) {
+        return tableList.get(index);
+    }
+
+    public List<String> getTableFromList(int index) {
+        return tableList.get(index);
+    }
+
+    public void addNullToRows() {
+        for(List<String> row : tableList) {
+            row.add(null);
+        }
+    }
+
+    public void removeTableRow(int index) {
+        for (List<String> row : tableList) {
+            row.remove(index);
+        }
+    }
+
+    public void updateRowValue(int index, int headerIndex, String value) {
+        tableList.get(index).set(headerIndex, value);
+    }
+
     public List<String> accessColumnHeaders() {
         return columnHeaders;
+    }
+
+    public boolean hasRequestedHeader(String header) {
+        return columnHeaders.contains(header);
+    }
+
+    public int getHeaderIndex(String header) {
+        return columnHeaders.indexOf(header);
+    }
+
+    public void addToColumnHeaders(String columnHeader) {
+        columnHeaders.add(columnHeader);
+    }
+
+    public void removeFromColumnHeaders(int index) {
+        columnHeaders.remove(index);
     }
 
     public int getCurrentID() {

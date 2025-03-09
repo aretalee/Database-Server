@@ -1,10 +1,5 @@
 package edu.uob;
 
-import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,17 +14,21 @@ public class Delete {
 
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList, server);
-        List<List<String>> tableList = chosenTable.accessTable();
 
+        List<List<String>> rowObjects = new ArrayList<List<String>>();
         if (!rowsToDelete.isEmpty()) {
             for (Integer index : rowsToDelete) {
                 if (index == -1) {
                     server.setErrorLine("Requested column(s) in condition does not exist.");
                     return false;
                 }
-                List<String> row = tableList.get(index);
-                tableList.remove(row);
+                List<String> row = chosenTable.getTableFromList(index);
+                rowObjects.add(row);
             }
+        }
+
+        for (List<String> row : rowObjects) {
+            chosenTable.removeFromTableList(row);
         }
 
         if (!chosenTable.saveToFile(chosenTable.getTableFile(), server)) {
