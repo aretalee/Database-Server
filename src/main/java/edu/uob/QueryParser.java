@@ -1,10 +1,10 @@
 package edu.uob;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Stack;
 
 
 public class QueryParser {
@@ -186,7 +186,6 @@ public class QueryParser {
             wildAttributeList = addToList(wildAttributeList, query, index, "from");
         }
 
-//        int numberOfCommas = wildAttributeList.size() - 1;
         index = wildAttributeList.size() + index;
         if (!query.get(index).equalsIgnoreCase("from")
                 || !checkAlphaNumeric(query.get(index + 1))
@@ -201,23 +200,22 @@ public class QueryParser {
         String tableName = query.get(index).toLowerCase();
         index++;
 
-        List<List<String>> conditionList = new ArrayList<>();
         if ((query.size() - 1) != (index)) {
             // query.size() - 1 to get to where index should be when list = *
             if (!query.get(index).equalsIgnoreCase("where")) {
                 server.setErrorLine("Invalid query term.");
                 return false;
             }
-            if (!isConditionValid(server, query, index + 1)
-                    || !parseCondition(server, query, index + 1, conditionList)) {
+            if (!isConditionValid(server, query, index + 1)) {
                 return false;
             }
         }
+        List<String> conditionList = parseCondition(query, index + 1);
 
         Select select = new Select();
         List<String> cleanWildAttributeList = removeSpecialCharacters(wildAttributeList, query);
         return select.selectRecords(server.getTable(tableName, server.getCurrentDatabase()),
-                cleanWildAttributeList, refineConditionList(conditionList), server);
+                cleanWildAttributeList, conditionList, server);
     }
 
     public boolean parseUpdate(DBServer server, List<String> query) {
@@ -242,16 +240,16 @@ public class QueryParser {
 
         index++;
 
-        List<List<String>> conditionList = new ArrayList<>();
-        if (!isConditionValid(server, query, index)
-                || !parseCondition(server, query, index, conditionList)) {
+        if (!isConditionValid(server, query, index)) {
             return false;
         }
 
+        List<String> conditionList = parseCondition(query, index);
         Update update = new Update();
+
         List<String> cleanNameValueList = removeSpecialCharacters(nameValueList, query);
         return update.updateTable(server.getTable(tableName, server.getCurrentDatabase()),
-                cleanNameValueList, refineConditionList(conditionList), server);
+                cleanNameValueList, conditionList, server);
     }
 
     public boolean parseDelete(DBServer server, List<String> query) {
@@ -263,16 +261,15 @@ public class QueryParser {
 
         String tableName = query.get(2).toLowerCase();
 
-        List<List<String>> conditionList = new ArrayList<>();
-        if (!isConditionValid(server, query, 4)
-                || !parseCondition(server, query, 4, conditionList)) {
+        if (!isConditionValid(server, query, 4)) {
             return false;
         }
 
+        List<String> conditionList = parseCondition(query, 4);
         Delete delete = new Delete();
 
         return delete.deleteRecord(server.getTable(tableName, server.getCurrentDatabase()),
-                refineConditionList(conditionList), server);
+                conditionList, server);
     }
 
     public boolean parseJoin(DBServer server, List<String> query) {
@@ -299,25 +296,31 @@ public class QueryParser {
 
     }
 
-    public boolean parseCondition(DBServer server, List<String> query, int startIndex, List<List<String>> conditionList) {
-        List<String> precedence = new ArrayList<String>();
+    public List<String> parseCondition(List<String> query, int startIndex) {
+        List<String> parsedConditions = new ArrayList<String>();
+        Stack<String> operators = new Stack<String>();
 
         for (int i = startIndex; i < query.size(); i++) {
             String currentToken = query.get(i);
+
             if (currentToken.equals(")")) {
-                query.set(i, " ");
-                break; // see if there is workaround (avoid using break if possible)
+                while (!operators.empty() && !operators.peek().equals("(")) { // is empty() needed?
+                    parsedConditions.add(operators.pop());
+                }
+                operators.pop();
             }
-            if (currentToken.equals("(")) {
-                parseCondition(server, query, i + 1, conditionList);
+            if (currentToken.equals("(") || currentToken.equalsIgnoreCase("and")
+                    || currentToken.equalsIgnoreCase("or")) {
+                operators.push(currentToken);
+            } else if (!currentToken.equals(")") && !currentToken.equals(";")) {
+                parsedConditions.add(currentToken);
             }
-            if (!currentToken.equals("(") && !currentToken.equals(";") && !currentToken.equals(" ")) {
-                precedence.add(currentToken);
-            }
-            query.set(i, " ");
         }
-        conditionList.add(precedence);
-        return true;
+        while (!operators.empty()) {
+            parsedConditions.add(operators.pop());
+        }
+
+        return parsedConditions;
     }
 
     public boolean isConditionValid(DBServer server, List<String> query, int startIndex) {
@@ -350,26 +353,6 @@ public class QueryParser {
             }
         }
         return true;
-    }
-
-    public List<List<String>> refineConditionList(List<List<String>> conditionList) {
-        List<List<String>> refinedList = new ArrayList<List<String>>();
-        List<String> boolOperators = new ArrayList<String>();
-
-        for (List<String> row : conditionList) {
-            List<String> tempList = new ArrayList<String>();
-            for (String item : row) {
-                if (item.equalsIgnoreCase("and") || item.equalsIgnoreCase("or")) {
-                    boolOperators.add(item);
-                } else {
-                    tempList.add(item.replace("'", ""));
-                }
-            }
-            refinedList.add(tempList);
-        }
-        refinedList.add(boolOperators);
-        refinedList.removeIf(l -> l.isEmpty() && refinedList.indexOf(l) != refinedList.size() - 1);
-        return refinedList;
     }
 
     public boolean isTokenComparator(String token, String[] comparators) {

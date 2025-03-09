@@ -4,13 +4,15 @@ import java.util.List;
 
 public class Update {
 
-    public boolean updateTable(Table chosenTable, List<String> nameValueList, List<List<String>> conditionList, DBServer server) {
+    public boolean updateTable(Table chosenTable, List<String> nameValueList, List<String> conditionList, DBServer server) {
 
         if (chosenTable == null) {
             server.setErrorLine("Requested table does not exist.");
             return false;
         }
 
+//        OldConditionHandler conditionHandler = new OldConditionHandler();
+//        List<Integer> rowsToUpdate = conditionHandler.filterTable(chosenTable, conditionList, server);
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToUpdate = conditionHandler.filterTable(chosenTable, conditionList, server);
 

@@ -7,17 +7,19 @@ public class Select {
 
     private boolean printAllRows = false;
 
-    public boolean selectRecords(Table chosenTable, List<String> chosenHeaders, List<List<String>> conditionList, DBServer server) {
+    public boolean selectRecords(Table chosenTable, List<String> chosenHeaders, List<String> conditionList, DBServer server) {
 
         if (chosenTable == null) {
             server.setErrorLine("Requested table does not exist.");
             return false;
         }
 
+//        OldConditionHandler conditionHandler = new OldConditionHandler();
+//        List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList, server);
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList, server);
 
-        if (conditionHandler.isConditionListEmpty(conditionList)) {
+        if (conditionList.isEmpty()) {
             printAllRows = true;
         } else if (!rowsToSelect.isEmpty() && rowsToSelect.get(0) == -1) { return false; }
 

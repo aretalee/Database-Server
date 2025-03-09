@@ -5,13 +5,15 @@ import java.util.List;
 
 public class Delete {
 
-    public boolean deleteRecord(Table chosenTable, List<List<String>> conditionList, DBServer server) {
+    public boolean deleteRecord(Table chosenTable, List<String> conditionList, DBServer server) {
 
         if (chosenTable == null) {
             server.setErrorLine("Requested table does not exist.");
             return false;
         }
 
+//        OldConditionHandler conditionHandler = new OldConditionHandler();
+//        List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList, server);
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList, server);
 

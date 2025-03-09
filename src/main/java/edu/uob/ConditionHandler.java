@@ -5,105 +5,64 @@ import java.util.List;
 
 public class ConditionHandler {
 
-    public List<Integer> filterTable(Table chosenTable, List<List<String>> conditions, DBServer server) {
+    public List<Integer> filterTable(Table chosenTable, List<String> conditions, DBServer server) {
 
-        if (isConditionListEmpty(conditions)) {
+        if (conditions.isEmpty()) {
             return null;
         }
-        List<List<List<Integer>>> comparisonResults = new ArrayList<List<List<Integer>>>();
 
-        for (List<String> condition : conditions) {
-            System.out.println(condition);
-        }
+        List<List<Integer>> resultList = new ArrayList<List<Integer>>();
+        // change AND to 11, OR to 10
 
-        for (int condIndex = 0; condIndex < conditions.size() - 1; condIndex++) {
-            List<List<Integer>> tempList = new ArrayList<List<Integer>>();
-            for (int itemIndex = 0; itemIndex < conditions.get(condIndex).size() - 1; itemIndex++) {
-                if (itemIndex % 3 == 0) {
-                    String attribute = conditions.get(condIndex).get(itemIndex);
-                    String comparator = conditions.get(condIndex).get(itemIndex + 1);
-                    String value = conditions.get(condIndex).get(itemIndex + 2);
-
-                    List<Integer> validRows = evaluateCondition(chosenTable, attribute, comparator, value);
-                    if (!validRows.isEmpty() && validRows.get(0) == -1) {
-                        server.setErrorLine("Requested column in conditions does not exist.");
-                        return validRows;
-                    }
-                    tempList.add(validRows);
+        int index = 0;
+        while (index < conditions.size()) {
+            String currentToken = conditions.get(index);
+            if (currentToken.equalsIgnoreCase("and") || currentToken.equalsIgnoreCase("or")) {
+                List<Integer> thisOp = new ArrayList<Integer>();
+                thisOp.add(currentToken.equalsIgnoreCase("and") ? 11 : 10);
+                resultList.add(thisOp);
+                index += 1;
+            } else {
+                String attribute = conditions.get(index);
+                String comparator = conditions.get(index + 1);
+                String value = conditions.get(index + 2);
+                List<Integer> validRows = evaluateCondition(chosenTable, attribute, comparator, value);
+                if (!validRows.isEmpty() && validRows.get(0) == -1) {
+                    server.setErrorLine("Requested column in conditions does not exist.");
+                    return validRows;
                 }
-            }
-            comparisonResults.add(tempList);
-        }
-
-        for (List<List<Integer>> condition : comparisonResults) {
-            System.out.println(condition);
-        }
-
-        if (conditions.get(conditions.size() - 1).isEmpty()) {
-            return comparisonResults.get(0).get(0);
-        } else {
-            return combineAllResults(comparisonResults, conditions.get(conditions.size() - 1));
-        }
-    }
-
-    public boolean isConditionListEmpty(List<List<String>> conditions) {
-        if (conditions == null) {
-            return true;
-        }
-        for (List<String> condition : conditions) {
-            if (!condition.isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public List<Integer> combineAllResults(List<List<List<Integer>>> allResults, List<String> boolOperators) {
-        List<List<Integer>> combinedLists = new ArrayList<List<Integer>>();
-        int boolIndex = 0;
-
-        for (List<List<Integer>> result : allResults) {
-            if (boolIndex != -1) {
-                combinedLists.add(combineResultLayer(result, boolOperators, boolIndex));
-                boolIndex = getCurrentBoolIndex(boolOperators);
+                resultList.add(validRows);
+                index += 3;
             }
         }
 
-        for (List<Integer> result : combinedLists) {
-            System.out.println("Result is " + result);
-        }
-        return combineResultLayer(combinedLists, boolOperators, boolIndex);
+        return combineResults(resultList);
     }
 
-    public int getCurrentBoolIndex(List<String> boolOperators) {
-        for (String operator : boolOperators) {
-            if (!operator.equals("")) {
-                return boolOperators.indexOf(operator);
+    public List<Integer> combineResults(List<List<Integer>> allResults) {
+
+        if (allResults.size() == 1) {
+            return allResults.get(0);
+        }
+
+        List<Integer> tempList;
+        int index = 0;
+        while (allResults.size() > 1) {
+            if (!allResults.get(index).isEmpty() && (allResults.get(index).get(0) == 11 || allResults.get(index).get(0) == 10)) {
+                tempList = editResultLists(allResults.get(index - 1), allResults.get(index - 2), allResults.get(index).get(0));
+                allResults.set(index, tempList);
+                allResults.remove(index - 1);
+                allResults.remove(index - 2);
+                index = 0;
             }
+            index += 1;
         }
-        return -1;
+        allResults.get(0).sort(null);
+        return allResults.get(0);
     }
 
-    public List<Integer> combineResultLayer(List<List<Integer>> result, List<String> boolOperators, int boolIndex) {
-        List<Integer> tempList = result.get(0);
-
-        for (int index = 1; index < result.size(); index++) {
-            if (!tempList.isEmpty() && !result.get(index).isEmpty() && (boolIndex < boolOperators.size())) {
-                System.out.println("Temp list is " + tempList);
-                System.out.println("Operator is " + boolOperators.get(boolIndex));
-                tempList = editLists(tempList, result.get(index), boolOperators.get(boolIndex));
-                System.out.println("New temp list is " + tempList);
-                boolOperators.set(boolIndex, "");
-                boolIndex++;
-            }
-        }
-
-        tempList.sort(null);
-        return tempList;
-    }
-
-    public List<Integer> editLists(List<Integer> listOne, List<Integer> listTwo, String operator) {
-        if (operator.equalsIgnoreCase("and")) {
+    public List<Integer> editResultLists(List<Integer> listOne, List<Integer> listTwo, int operator) {
+        if (operator == 11) {
             listTwo.removeIf(i -> !listOne.contains(i));
             listOne.removeIf(j -> !listTwo.contains(j));
         } else {
@@ -112,7 +71,6 @@ public class ConditionHandler {
         }
         return listOne;
     }
-
 
     public List<Integer> evaluateCondition(Table chosenTable, String attribute, String comparator, String value) {
         List<Integer> currentList = new ArrayList<Integer>();
@@ -123,7 +81,7 @@ public class ConditionHandler {
         }
         int headerIndex = ColumnIndexFinder.findColumnIndex(chosenTable, attribute);
         for (List<String> row : chosenTable.accessTable()) {
-            if (compareValue(row, headerIndex, comparator, value)) {
+            if (compareValue(row, headerIndex, comparator, value.replaceAll("'", ""))) {
                 currentList.add(chosenTable.getTableIndex(row));
             }
         }
