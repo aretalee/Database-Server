@@ -7,34 +7,11 @@ public class Join {
 
     public boolean joinTables(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo, DBServer server) {
 
-        if (tableOne == null || tableTwo == null) {
-            server.setErrorLine("One or more requested tables do not exist.");
+        if (areThereJoinErrors(tableOne, tableTwo, attributeOne, attributeTwo, server)) {
             return false;
         }
 
-        // ensure ordering of tables is same as that of attributes
-        // also need to check if attribute 1 is in table 1 & attribute 2 is in table 2
-        if (!tableOne.hasRequestedHeader(attributeOne)
-                || !tableTwo.hasRequestedHeader(attributeTwo)) {
-            server.setErrorLine("One or more attributes do not belong to the corresponding tables.");
-            return false;
-        }
-
-        // create new TABLE object for temp storage (if like SQL only need to generate output and no need so save?)
-        // make headers first (need to append OG table name)
-        List<String> headerList = new ArrayList<>();
-        headerList.add("id");
-        for (String header : tableOne.accessColumnHeaders()) {
-            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attributeOne)) {
-                headerList.add(tableOne.getTableName().replace(".tab", "") + "." + header);
-            }
-        }
-        for (String header : tableTwo.accessColumnHeaders()) {
-            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attributeTwo)) {
-                headerList.add(tableTwo.getTableName().replace(".tab", "") + "." + header);
-            }
-        }
-
+        List<String> headerList = createHeaderList(tableOne, tableTwo, attributeOne, attributeTwo);
         Table jointTable = new Table(null, headerList, "none");
         int headerIndexOne = tableOne.getHeaderIndex(attributeOne);
         int headerIndexTwo = tableTwo.getHeaderIndex(attributeTwo);
@@ -47,29 +24,54 @@ public class Join {
         List<String> tableTwoValues = getAttributeValues(tableTwo, headerIndexTwo);
         Insert insert = new Insert();
 
-        System.out.println(tableOneValues);
-        System.out.println(tableTwoValues);
-//        for (String tableOneValue : tableOneValues) {
-            for (String tableValue : tableOneValues) {
-                System.out.println(tableValue);
+        // need to make sure/edit so that this works with 1-to-many + many-to-many
+
+        // JOIN coursework AND marks ON submission AND id;
+        // JOIN cause AND result ON number AND mark;
+
+        for (List<String> rowOne : tableOne.accessTable()) {
+            for (List<String> rowTwo : tableTwo.accessTable()) {
                 List<String> thisRow = new ArrayList<String>();
-                if (tableTwoValues.contains(tableValue)) {
-                    thisRow = addNewValues(tableOne.getTableRow(tableOneValues.indexOf(tableValue)), thisRow, headerIndexOne);
-                    thisRow = addNewValues(tableTwo.getTableRow(tableTwoValues.indexOf(tableValue)), thisRow, headerIndexTwo);
+                if (rowTwo.get(headerIndexTwo).equals(rowOne.get(headerIndexOne))) {
+                    thisRow = addNewValues(rowOne, thisRow, headerIndexOne);
+                    thisRow = addNewValues(rowTwo, thisRow, headerIndexTwo);
+                    insert.insertIntoTable(server, jointTable, thisRow);
                 }
-                insert.insertIntoTable(server, jointTable, thisRow);
             }
-//        }
+        }
 
 
-        // call SELECT to print them out
-        Select select = new Select();
-        List<String> printAll = new ArrayList<String>();
-        printAll.add("*");
-        List<String> conditions = new ArrayList<String>();
-        select.selectRecords(jointTable, printAll, conditions, server);
+        outputJointTable(jointTable, server);
 
         return true;
+    }
+
+    public boolean areThereJoinErrors(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo, DBServer server) {
+        if (tableOne == null || tableTwo == null) {
+            server.setErrorLine("One or more requested tables do not exist.");
+            return true;
+        } else if (!tableOne.hasRequestedHeader(attributeOne)
+                || !tableTwo.hasRequestedHeader(attributeTwo)) {
+            server.setErrorLine("One or more attributes do not belong to the corresponding tables.");
+            return true;
+        }
+        return false;
+    }
+
+    public List<String> createHeaderList(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo) {
+        List<String> tempList = new ArrayList<>();
+        tempList.add("id");
+        for (String header : tableOne.accessColumnHeaders()) {
+            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attributeOne)) {
+                tempList.add(tableOne.getTableName().replace(".tab", "") + "." + header);
+            }
+        }
+        for (String header : tableTwo.accessColumnHeaders()) {
+            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attributeTwo)) {
+                tempList.add(tableTwo.getTableName().replace(".tab", "") + "." + header);
+            }
+        }
+        return tempList;
     }
 
     public List<String> getAttributeValues(Table table, int headerColumnIndex) {
@@ -91,6 +93,14 @@ public class Join {
         }
 
         return newRow;
+    }
+
+    public void outputJointTable(Table jointTable, DBServer server) {
+        Select select = new Select();
+        List<String> printAll = new ArrayList<String>();
+        printAll.add("*");
+        List<String> conditions = new ArrayList<String>();
+        select.selectRecords(jointTable, printAll, conditions, server);
     }
 
 

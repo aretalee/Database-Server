@@ -4,7 +4,6 @@ public class Alter {
 
     public boolean alterTable(Table chosenTable, String valueType, String chosenHeader, DBServer server) {
 
-        // best to separate out into smaller functions
         if(valueType.equalsIgnoreCase("add")) {
             if (!addColumnHeader(chosenTable, chosenHeader, server)) {
                 return false;
@@ -32,7 +31,6 @@ public class Alter {
             server.setErrorLine("Column already exists.");
             return false;
         }
-
         table.addToColumnHeaders(header);
         table.addColumnToRows();
         return true;
@@ -48,7 +46,6 @@ public class Alter {
             server.setErrorLine("Cannot remove id column from table.");
             return false;
         }
-
         table.removeFromColumnHeaders(chosenIndex);
         table.removeTableRow(chosenIndex);
         return true;

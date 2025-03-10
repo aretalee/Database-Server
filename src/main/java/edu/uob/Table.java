@@ -29,19 +29,21 @@ public class Table {
             tableName = tableFile.getName();
         }
         inWhichDatabase = databaseName;
-        setID();
+        latestID = 0;
+//        setID();
 
     }
 
-    public void setID() {
-        if (tableList.isEmpty()) {
-            this.latestID = 0;
-        } else {
-            List<String> lastRow = tableList.get(tableList.size() - 1);
-            String id = lastRow.get(0);
-            this.latestID = Integer.parseInt(id);
-        }
-    }
+//    public void setID() {
+//        if (tableList.isEmpty()) {
+//            this.latestID = 0;
+//        }
+////        else {
+////            List<String> fistRow = tableList.get(tableList.size() - 1);
+////            String id = lastRow.get(0);
+////            this.latestID = Integer.parseInt(id);
+////        }
+//    }
 
     public String getTableName() {
         return tableName;
@@ -112,6 +114,14 @@ public class Table {
     }
 
     public int getCurrentID() {
+        return latestID;
+    }
+
+    public void setCurrentID(int currentID) {
+        latestID = currentID;
+    }
+
+    public int getNextID() {
         return ++latestID;
     }
 
@@ -124,7 +134,6 @@ public class Table {
         if (!fileHandler.readFile(tableFile, this)) {
             return false;
         }
-        setID();
         return true;
     }
 

@@ -16,19 +16,13 @@ public class Delete {
         List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList, server);
 
         List<List<String>> rowObjects = new ArrayList<List<String>>();
-        if (!rowsToDelete.isEmpty()) {
-            for (Integer index : rowsToDelete) {
-                if (index == -1) {
-                    server.setErrorLine("Requested column(s) in condition does not exist.");
-                    return false;
-                }
-                List<String> row = chosenTable.getTableFromList(index);
-                rowObjects.add(row);
-            }
+        if (!getRowObjects(chosenTable, rowObjects, rowsToDelete, server)) {
+            return false;
         }
 
         for (List<String> row : rowObjects) {
             chosenTable.removeFromTableList(row);
+            // does there need to be error handling here?
         }
 
         if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
@@ -37,5 +31,21 @@ public class Delete {
         }
         return true;
     }
+
+    public boolean getRowObjects(Table table, List<List<String>> rowObjects, List<Integer> rowsToDelete, DBServer server) {
+        if (!rowsToDelete.isEmpty()) {
+            for (Integer index : rowsToDelete) {
+                if (index == -1) {
+                    server.setErrorLine("Requested column(s) in condition does not exist.");
+                    return false;
+                }
+                List<String> row = table.getTableFromList(index);
+                rowObjects.add(row);
+            }
+        }
+        return true;
+    }
+
+
 
 }

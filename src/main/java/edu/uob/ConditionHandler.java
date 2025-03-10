@@ -112,7 +112,6 @@ public class ConditionHandler {
                 return false;
             }
         }
-
         if (comparator.equals(">")) { valueMatches = (compOne > compTwo); }
         if (comparator.equals("<")) { valueMatches = (compOne < compTwo); }
         if (comparator.equals(">=")) { valueMatches = (compOne >= compTwo); }

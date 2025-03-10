@@ -13,7 +13,6 @@ public class Update {
 
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToUpdate = conditionHandler.filterTable(chosenTable, conditionList, server);
-        System.out.println(rowsToUpdate);
 
         if (!checkValueListHeaders(chosenTable, nameValueList, server)
                 || !editValues(chosenTable, nameValueList, rowsToUpdate, server)) {

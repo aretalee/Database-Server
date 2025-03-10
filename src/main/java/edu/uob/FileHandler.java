@@ -17,8 +17,11 @@ public class FileHandler {
             int lineCounter = 1;
 
             while((currentLine = bufferedReader.readLine()) != null) {
-                String[] splitLine = currentLine.split("\t");
                 if(lineCounter == 1) {
+                    currentTable.setCurrentID(Integer.parseInt(currentLine));
+                }
+                String[] splitLine = currentLine.split("\t");
+                if(lineCounter == 2) {
                     for(String item : splitLine) {
                         currentTable.addToColumnHeaders(item);
                     }
@@ -40,6 +43,10 @@ public class FileHandler {
         try {
             FileWriter fileWriter = new FileWriter(chosenFile);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+            String latestID = String.valueOf(currentTable.getCurrentID());
+            bufferedWriter.write(latestID);
+            bufferedWriter.newLine();
 
             List<String> columnHeaders = currentTable.accessColumnHeaders();
             for (String header : columnHeaders) {

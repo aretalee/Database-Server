@@ -24,7 +24,6 @@ public class Create {
     public boolean createTable(String filePath, String fileName, List<String> attributeList, DBServer server) {
 
         newFile = new File(filePath + File.separator + fileName.toLowerCase() + ".tab");
-
         try {
             if (checkHeadersForDupes(attributeList, server)) {
                 return false;
@@ -36,7 +35,6 @@ public class Create {
             server.setErrorLine("Please try again.");
             return false;
         }
-
         Table newTable = new Table(newFile, attributeList, server.getCurrentDatabase());
         server.addTable(newTable);
 

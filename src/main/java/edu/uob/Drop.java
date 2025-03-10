@@ -14,7 +14,6 @@ public class Drop {
         }
         if (file.isDirectory()) {
             File[] fileList = file.listFiles();
-
             if (fileList != null) {
                 file = clearDirectory(file, fileList, server);
                 server.removeDatabase(file.getName());
