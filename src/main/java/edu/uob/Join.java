@@ -5,9 +5,9 @@ import java.util.List;
 
 public class Join {
 
-    public boolean joinTables(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo, DBServer server) {
+    public boolean joinTables(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo, QueryHandler queryHandler) {
 
-        if (areThereJoinErrors(tableOne, tableTwo, attributeOne, attributeTwo, server)) {
+        if (areThereJoinErrors(tableOne, tableTwo, attributeOne, attributeTwo, queryHandler)) {
             return false;
         }
 
@@ -23,25 +23,25 @@ public class Join {
                 if (rowTwo.get(headerIndexTwo).equals(rowOne.get(headerIndexOne))) {
                     thisRow = addNewValues(rowOne, thisRow, headerIndexOne);
                     thisRow = addNewValues(rowTwo, thisRow, headerIndexTwo);
-                    insert.insertIntoTable(server, jointTable, thisRow);
+                    insert.insertIntoTable(queryHandler, jointTable, thisRow);
                 }
             }
         }
-        outputJointTable(jointTable, server);
+        outputJointTable(jointTable, queryHandler);
 
         return true;
     }
 
-    public boolean areThereJoinErrors(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo, DBServer server) {
+    public boolean areThereJoinErrors(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo, QueryHandler queryHandler) {
         if (tableOne == null || tableTwo == null) {
-            server.setErrorLine("One or more requested tables do not exist.");
+            queryHandler.setErrorLine("One or more requested tables do not exist.");
             return true;
         } else if (tableOne.getTableName().equals(tableTwo.getTableName())) {
-            server.setErrorLine("Cannot join the same table.");
+            queryHandler.setErrorLine("Cannot join the same table.");
             return true;
         } else if (!tableOne.hasRequestedHeader(attributeOne)
                 || !tableTwo.hasRequestedHeader(attributeTwo)) {
-            server.setErrorLine("One or more attributes do not belong to the corresponding tables.");
+            queryHandler.setErrorLine("One or more attributes do not belong to the corresponding tables.");
             return true;
         }
         return false;
@@ -63,16 +63,6 @@ public class Join {
         return tempList;
     }
 
-    public List<String> getAttributeValues(Table table, int headerColumnIndex) {
-        List<String> columnValues = new ArrayList<String>();
-
-        for (List<String> row : table.accessTable()) {
-            columnValues.add(row.get(headerColumnIndex));
-        }
-
-        return columnValues;
-    }
-
     public List<String> addNewValues(List<String> chosenRow, List<String> newRow, int headerIndex) {
 
         for (String item : chosenRow) {
@@ -84,12 +74,12 @@ public class Join {
         return newRow;
     }
 
-    public void outputJointTable(Table jointTable, DBServer server) {
+    public void outputJointTable(Table jointTable, QueryHandler queryHandler) {
         Select select = new Select();
         List<String> printAll = new ArrayList<String>();
         printAll.add("*");
         List<String> conditions = new ArrayList<String>();
-        select.selectRecords(jointTable, printAll, conditions, server);
+        select.selectRecords(jointTable, printAll, conditions, queryHandler);
     }
 
 

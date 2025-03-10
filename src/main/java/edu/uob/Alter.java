@@ -2,33 +2,33 @@ package edu.uob;
 
 public class Alter {
 
-    public boolean alterTable(Table chosenTable, String valueType, String chosenHeader, DBServer server) {
+    public boolean alterTable(Table chosenTable, String valueType, String chosenHeader, QueryHandler queryHandler) {
 
         if(valueType.equalsIgnoreCase("add")) {
-            if (!addColumnHeader(chosenTable, chosenHeader, server)) {
+            if (!addColumnHeader(chosenTable, chosenHeader, queryHandler)) {
                 return false;
             }
         } else if(valueType.equalsIgnoreCase("drop")) {
-            if (!removeColumnHeader(chosenTable, chosenHeader, server)) {
+            if (!removeColumnHeader(chosenTable, chosenHeader, queryHandler)) {
                 return false;
             }
         }
 
         if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
-            server.setErrorLine("Could not alter table, please try again.");
+            queryHandler.setErrorLine("Could not alter table, please try again.");
             return false;
         }
 
         return true;
     }
 
-    public boolean addColumnHeader(Table table, String header, DBServer server) {
+    public boolean addColumnHeader(Table table, String header, QueryHandler queryHandler) {
 
         if (table == null) {
-            server.setErrorLine("Requested table does not exist.");
+            queryHandler.setErrorLine("Requested table does not exist.");
             return false;
         } else if (table.hasRequestedHeader(header)) {
-            server.setErrorLine("Column already exists.");
+            queryHandler.setErrorLine("Column already exists.");
             return false;
         }
         table.addToColumnHeaders(header);
@@ -36,14 +36,14 @@ public class Alter {
         return true;
     }
 
-    public boolean removeColumnHeader(Table table, String header, DBServer server) {
+    public boolean removeColumnHeader(Table table, String header, QueryHandler queryHandler) {
         int chosenIndex = ColumnIndexFinder.findColumnIndex(table, header);
 
         if (chosenIndex == -1) {
-            server.setErrorLine("Column does not exist.");
+            queryHandler.setErrorLine("Column does not exist.");
             return false;
         } else if (header.equalsIgnoreCase("id")) {
-            server.setErrorLine("Cannot remove id column from table.");
+            queryHandler.setErrorLine("Cannot remove id column from table.");
             return false;
         }
         table.removeFromColumnHeaders(chosenIndex);

@@ -5,9 +5,9 @@ import java.util.List;
 public class Insert {
 
 
-    public boolean insertIntoTable(DBServer server, Table chosenTable, List<String> valueParameters) {
+    public boolean insertIntoTable(QueryHandler queryHandler, Table chosenTable, List<String> valueParameters) {
 
-        if (areThereInsertErrors(server, chosenTable, valueParameters)) {
+        if (areThereInsertErrors(queryHandler, chosenTable, valueParameters)) {
             return false;
         }
 
@@ -17,22 +17,22 @@ public class Insert {
         chosenTable.setCurrentID(rowID);
 
         if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
-            server.setErrorLine("Could not insert values into table, please try again.");
+            queryHandler.setErrorLine("Could not insert values into table, please try again.");
             return false;
         }
 
         return true;
     }
 
-    public boolean areThereInsertErrors(DBServer server, Table chosenTable, List<String> valueParameters) {
+    public boolean areThereInsertErrors(QueryHandler queryHandler, Table chosenTable, List<String> valueParameters) {
         if (chosenTable == null) {
-            server.setErrorLine("Requested table does not exist.");
+            queryHandler.setErrorLine("Requested table does not exist.");
             return true;
         } else if (chosenTable.accessColumnHeaders().size() == 1) {
-            server.setErrorLine("No columns in table, please insert at least one using ALTER.");
+            queryHandler.setErrorLine("No columns in table, please insert at least one using ALTER.");
             return true;
         } else if (valueParameters.size() != chosenTable.accessColumnHeaders().size() - 1) {
-            server.setErrorLine("Must insert " + (chosenTable.accessColumnHeaders().size() - 1)
+            queryHandler.setErrorLine("Must insert " + (chosenTable.accessColumnHeaders().size() - 1)
                     + " values but you have inputted " + valueParameters.size() + " .");
             return true;
         }

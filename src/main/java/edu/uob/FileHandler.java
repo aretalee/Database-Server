@@ -69,14 +69,14 @@ public class FileHandler {
         return true;
     }
 
-    public boolean populateWithExistingFiles(DBServer server) {
-        File[] storageFolder = (new File(server.getStorageFolderPath())).listFiles();
+    public boolean populateWithExistingFiles(QueryHandler queryHandler) {
+        File[] storageFolder = (new File(queryHandler.getCurrentServer().getStorageFolderPath())).listFiles();
 
         if (storageFolder != null && storageFolder.length > 0) {
             for (File databaseFile : storageFolder) {
                 Database thisDatabase = new Database(databaseFile);
-                server.addDatabase(thisDatabase);
-                if (!addTableObjects(server, thisDatabase.getDatabaseName())) {
+                queryHandler.addDatabase(thisDatabase);
+                if (!addTableObjects(queryHandler, thisDatabase.getDatabaseName())) {
                     return false;
                 }
             }
@@ -84,8 +84,8 @@ public class FileHandler {
         return true;
     }
 
-    public boolean addTableObjects(DBServer server, String databaseName) {
-        String databasePath = server.getStorageFolderPath() + File.separator + databaseName;
+    public boolean addTableObjects(QueryHandler queryHandler, String databaseName) {
+        String databasePath = queryHandler.getCurrentServer().getStorageFolderPath() + File.separator + databaseName;
         File[] databaseFolder = (new File(databasePath)).listFiles();
 
         if (databaseFolder != null) {
@@ -96,7 +96,7 @@ public class FileHandler {
                     if (!thisTable.loadTableData()) {
                         return false;
                     }
-                    server.addTable(thisTable);
+                    queryHandler.addTable(thisTable);
                 }
             }
         }

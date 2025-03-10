@@ -9,45 +9,45 @@ public class Create {
 
     private File newFile;
 
-    public boolean createDatabase(String filePath, String fileName, DBServer server) {
+    public boolean createDatabase(String filePath, String fileName, QueryHandler queryHandler) {
 
         newFile = new File(filePath + File.separator + fileName.toLowerCase());
         if (newFile.exists()) {
-            server.setErrorLine("The given directory already exists.");
+            queryHandler.setErrorLine("The given directory already exists.");
             return false;
         } else if (!newFile.mkdir()) {
-            server.setErrorLine("Directory could not be created.");
+            queryHandler.setErrorLine("Directory could not be created.");
             return false;
         }
         return true;
     }
 
-    public boolean createTable(String filePath, String fileName, List<String> attributeList, DBServer server) {
+    public boolean createTable(String filePath, String fileName, List<String> attributeList, QueryHandler queryHandler) {
 
         newFile = new File(filePath + File.separator + fileName.toLowerCase() + ".tab");
         try {
-            if (checkHeadersForDupes(attributeList, server)) {
+            if (checkHeadersForDupes(attributeList, queryHandler)) {
                 return false;
             } else if (!newFile.createNewFile()) {
-                server.setErrorLine("The given table already exists.");
+                queryHandler.setErrorLine("The given table already exists.");
                 return false;
             }
         } catch (IOException e) {
-            server.setErrorLine("Please try again.");
+            queryHandler.setErrorLine("Please try again.");
             return false;
         }
-        Table newTable = new Table(newFile, attributeList, server.getCurrentDatabase());
-        server.addTable(newTable);
+        Table newTable = new Table(newFile, attributeList, queryHandler.getCurrentDatabase());
+        queryHandler.addTable(newTable);
 
         if (!newTable.saveToFile(newFile)) {
-            server.setErrorLine("Could not create table, please try again.");
+            queryHandler.setErrorLine("Could not create table, please try again.");
             return false;
         }
 
         return true;
     }
 
-    public boolean checkHeadersForDupes(List<String> headers, DBServer server) {
+    public boolean checkHeadersForDupes(List<String> headers, QueryHandler queryHandler) {
         if (headers.isEmpty()) {
             return false;
         }
@@ -55,9 +55,9 @@ public class Create {
         for (String header : lowercaseHeaders) {
             if (Collections.frequency(lowercaseHeaders, header) > 1) {
                 if (header.equalsIgnoreCase("id")) {
-                    server.setErrorLine("Cannot set id as header in table.");
+                    queryHandler.setErrorLine("Cannot set id as header in table.");
                 } else {
-                    server.setErrorLine("One or more column headers have been duplicated.");
+                    queryHandler.setErrorLine("One or more column headers have been duplicated.");
                 }
                 return true;
             }

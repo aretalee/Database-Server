@@ -9,23 +9,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Paths;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 
 /** This class implements the DB server. */
 public class DBServer {
 
     private static final char END_OF_TRANSMISSION = 4;
     private String storageFolderPath;
-
-    private boolean calledUseCommand = false;
-    private List<Database> allDatabases = new ArrayList<Database>();
-    private List<Table> allTables = new ArrayList<Table>();
-    private String currentDatabase;
-
-    private List<String> tableForPrinting = new ArrayList<String>();
-    private boolean printTable = false;
-    private String errorLine;
+    private QueryHandler queryHandler;
 
     public static void main(String args[]) throws IOException {
         DBServer server = new DBServer();
@@ -38,14 +28,10 @@ public class DBServer {
     */
     public DBServer() {
         storageFolderPath = Paths.get("databases").toAbsolutePath().toString();
+        queryHandler = new QueryHandler(this);
         try {
             // Create the database storage folder if it doesn't already exist !
             Files.createDirectories(Paths.get(storageFolderPath));
-
-            FileHandler fileHandler = new FileHandler();
-            if (!fileHandler.populateWithExistingFiles(this)) {
-                System.out.println("Unable to access existing files.");
-            }
         } catch(IOException ioe) {
             System.out.println("Can't seem to create database storage folder " + storageFolderPath);
         }
@@ -59,98 +45,12 @@ public class DBServer {
     */
     public String handleCommand(String command) {
         // TODO implement your server logic here
-
-        QueryLexer queryLexer = new QueryLexer(command);
-        queryLexer.setup();
-        List<String> tokens = queryLexer.getTokens();
-
-        if (command.isEmpty()) {
-            return "[ERROR]: No command specified.";
-        } else if (!tokens.get(0).equalsIgnoreCase("use") && !tokens.get(0).equalsIgnoreCase("create")
-                && !tokens.get(0).equalsIgnoreCase("database") && !calledUseCommand) {
-            return "[ERROR]: Please call USE before attempting table-specific commands.";
-        }
-
-        QueryParser parser = new QueryParser();
-        return returnStatement(parser.parseQuery(tokens, this));
+        return queryHandler.returnResponse(command);
     }
 
-    public String returnStatement(boolean parserReturnValue) {
-        StringBuilder returnStatement = new StringBuilder();
-        if (parserReturnValue) {
-            returnStatement.append("[OK]");
-            if (tableForPrinting != null && printTable) {
-                for (String row : tableForPrinting) {
-                    returnStatement.append(row);
-                }
-                printTable = false;
-            }
-        } else {
-            returnStatement = new StringBuilder(("[ERROR]: " + errorLine));
-        }
-        return returnStatement.toString();
-    }
-
-    public List<Database> getAllDatabases() {
-        return this.allDatabases;
-    }
-
-    public void addTable(Table table) {
-        allTables.add(table);
-    }
-
-    public void removeTable(String tableName, String databaseName) {
-        // should I make it null first?
-        allTables.removeIf(table -> table.getWhichDatabase().equalsIgnoreCase(databaseName)
-                && table.getTableName().equals(tableName));
-    }
-
-    public void addDatabase(Database database) {
-        allDatabases.add(database);
-    }
-
-    public void removeDatabase(String databaseName) {
-        allDatabases.removeIf(database -> database.getDatabaseName().equals(databaseName));
-    }
 
     public String getStorageFolderPath() {
         return this.storageFolderPath;
-    }
-
-    public String getCurrentDatabase() {
-        return this.currentDatabase;
-    }
-
-    public void setCurrentDatabase(String currentDatabase) {
-        this.currentDatabase = currentDatabase;
-    }
-
-    public Table getTable(String tableName, String databaseName) {
-       Table toBeReturned = null;
-
-        for (Table currentTable: this.allTables) {
-           if (currentTable.getWhichDatabase().equalsIgnoreCase(databaseName)
-                   && currentTable.getTableName().equalsIgnoreCase(tableName + ".tab")) {
-               toBeReturned = currentTable;
-           }
-       }
-        return toBeReturned;
-    }
-
-    public void setTableForPrinting(List<String> tableForPrinting) {
-        this.tableForPrinting = tableForPrinting;
-    }
-
-    public void setPrintBoolean(boolean printTable) {
-        this.printTable = printTable;
-    }
-
-    public void setErrorLine(String error) {
-        this.errorLine = error;
-    }
-
-    public void setCalledUseCommand(boolean calledUseCommand) {
-        this.calledUseCommand = calledUseCommand;
     }
 
     //  === Methods below handle networking aspects of the project - you will not need to change these ! ===

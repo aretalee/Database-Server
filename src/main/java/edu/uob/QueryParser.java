@@ -12,96 +12,99 @@ public class QueryParser {
                               , "database", "table", "into", "values", "from", "where", "set", "and", "or"
                               , "add", "true", "false", "null"};
 
-    public boolean parseQuery(List<String> query, DBServer server) {
+    public boolean parseQuery(List<String> query, QueryHandler queryHandler) {
         if (!query.get(query.size() - 1).equalsIgnoreCase(";")) {
-            server.setErrorLine("Missing semicolon at end of query.");
+            queryHandler.setErrorLine("Missing semicolon at end of query.");
             return false;
         }
         boolean queryValid;
         switch (query.get(0).toLowerCase()) {
-            case "use" ->  queryValid =  parseUse(server, query);
-            case "create" ->  queryValid =  parseCreate(server, query);
-            case "drop" ->  queryValid =  parseDrop(server, query);
-            case "alter" ->  queryValid =  parseAlter(server, query);
-            case "insert" ->  queryValid =  parseInsert(server, query);
-            case "select" ->  queryValid =  parseSelect(server, query);
-            case "update" ->  queryValid =  parseUpdate(server, query);
-            case "delete" ->  queryValid =  parseDelete(server, query);
-            case "join" ->  queryValid =  parseJoin(server, query);
+            case "use" ->  queryValid =  parseUse(queryHandler, query);
+            case "create" ->  queryValid =  parseCreate(queryHandler, query);
+            case "drop" ->  queryValid =  parseDrop(queryHandler, query);
+            case "alter" ->  queryValid =  parseAlter(queryHandler, query);
+            case "insert" ->  queryValid =  parseInsert(queryHandler, query);
+            case "select" ->  queryValid =  parseSelect(queryHandler, query);
+            case "update" ->  queryValid =  parseUpdate(queryHandler, query);
+            case "delete" ->  queryValid =  parseDelete(queryHandler, query);
+            case "join" ->  queryValid =  parseJoin(queryHandler, query);
             default -> {
-                server.setErrorLine("First word is not a valid query type.");
+                queryHandler.setErrorLine("First word is not a valid query type.");
                 queryValid =  false;
             }
         }
         return queryValid;
     }
 
-    public boolean parseUse(DBServer server, List<String> query) {
+    public boolean parseUse(QueryHandler queryHandler, List<String> query) {
         if (query.size() != 3) {
-            server.setErrorLine("Invalid query length.");
+            queryHandler.setErrorLine("Invalid query length.");
             return false;
         } else if (!checkAlphaNumeric(query.get(1)) || isThereReservedWord(query.get(1))) {
-            server.setErrorLine("Invalid database name.");
+            queryHandler.setErrorLine("Invalid database name.");
             return false;
         }
         String databaseName = query.get(1).toLowerCase();
-        server.setCurrentDatabase(databaseName);
+        queryHandler.setCurrentDatabase(databaseName);
         Use use = new Use();
-        return use.switchDatabases(server.getStorageFolderPath(), databaseName, server);
+        return use.switchDatabases(queryHandler.getCurrentServer().getStorageFolderPath(), databaseName, queryHandler);
     }
 
-    public boolean parseCreate(DBServer server, List<String> query) {
+    public boolean parseCreate(QueryHandler queryHandler, List<String> query) {
         List<String> attributeList = new ArrayList<String>();
         attributeList.add("id");
 
         if ((!query.get(1).equalsIgnoreCase("database") && !query.get(1).equalsIgnoreCase("table"))) {
-            server.setErrorLine("Can only create databases or tables.");
+            queryHandler.setErrorLine("Can only create databases or tables.");
             return false;
         } else if ((query.get(1).equalsIgnoreCase("database") && query.size() != 4)
             || (query.get(1).equalsIgnoreCase("table") && query.size() < 4)) {
-            server.setErrorLine("Invalid query length.");
+            queryHandler.setErrorLine("Invalid query length.");
             return false;
         } else if (!checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))) {
-            server.setErrorLine("Invalid database/table name.");
+            queryHandler.setErrorLine("Invalid database/table name.");
             return false;
         }
         String fileName = query.get(2).toLowerCase();
         if (query.size() > 4) {
             if (!query.get(3).equals("(")) {
-                server.setErrorLine("Missing opening bracket for attribute list.");
+                queryHandler.setErrorLine("Missing opening bracket for attribute list.");
                 return false;
             }
             int index = 4;
             if (!query.get(query.size() - 2).equals(")")) {
-                server.setErrorLine("Missing closing bracket for attribute list.");
+                queryHandler.setErrorLine("Missing closing bracket for attribute list.");
                 return false;
             }
             attributeList = addToList(attributeList, query, index, ")");
             if (!isListValid(attributeList, "AttributeList")) {
-                server.setErrorLine("Entered invalid attributes.");
+                queryHandler.setErrorLine("Entered invalid attributes.");
                 return false;
             }
         }
         Create create = new Create();
         if (query.get(1).equalsIgnoreCase("database")) {
-            return create.createDatabase(server.getStorageFolderPath(), fileName, server);
+            return create.createDatabase(queryHandler.getCurrentServer().getStorageFolderPath(), fileName, queryHandler);
         } else {
-            String databasePath = server.getStorageFolderPath() + File.separator + server.getCurrentDatabase();
+            System.out.println(queryHandler.getCurrentDatabase());
+            String databasePath = queryHandler.getCurrentServer().getStorageFolderPath()
+                    + File.separator + queryHandler.getCurrentDatabase();
+            System.out.println("Database path: " + databasePath);
             List<String> cleanAttributeList = removeSpecialCharacters(attributeList, query);
-            return create.createTable(databasePath, fileName, cleanAttributeList, server);
+            return create.createTable(databasePath, fileName, cleanAttributeList, queryHandler);
         }
     }
 
-    public boolean parseDrop(DBServer server, List<String> query) {
+    public boolean parseDrop(QueryHandler queryHandler, List<String> query) {
         if (query.size() != 4) {
-            server.setErrorLine("Invalid query length.");
+            queryHandler.setErrorLine("Invalid query length.");
             return false;
         } else if (!query.get(1).equalsIgnoreCase("database")
                 && !query.get(1).equalsIgnoreCase("table")) {
-            server.setErrorLine("Can only drop databases or tables.");
+            queryHandler.setErrorLine("Can only drop databases or tables.");
             return false;
         } else if (!checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))) {
-            server.setErrorLine("Invalid database/table name.");
+            queryHandler.setErrorLine("Invalid database/table name.");
             return false;
         }
 
@@ -110,21 +113,21 @@ public class QueryParser {
         Drop drop = new Drop();
         String filePath;
         if (query.get(1).equalsIgnoreCase("database")) {
-            filePath = server.getStorageFolderPath() + File.separator + fileName;
+            filePath = queryHandler.getCurrentServer().getStorageFolderPath() + File.separator + fileName;
         } else {
-            filePath = server.getStorageFolderPath() + File.separator
-                    + server.getCurrentDatabase() + File.separator + fileName + ".tab";
+            filePath = queryHandler.getCurrentServer().getStorageFolderPath() + File.separator
+                    + queryHandler.getCurrentDatabase() + File.separator + fileName + ".tab";
         }
 
-        return drop.dropFile(filePath, server);
+        return drop.dropFile(filePath, queryHandler);
     }
 
-    public boolean parseAlter(DBServer server, List<String> query) {
+    public boolean parseAlter(QueryHandler queryHandler, List<String> query) {
         if (query.size() != 6 || !query.get(1).equalsIgnoreCase("table")
                 || !checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))
                 || (!query.get(3).equalsIgnoreCase("add") && !query.get(3).equalsIgnoreCase("drop"))
                 || !checkAlphaNumeric(query.get(4)) || isThereReservedWord(query.get(4))) {
-            server.setErrorLine("Invalid query terms or value names.");
+            queryHandler.setErrorLine("Invalid query terms or value names.");
             return false;
         }
         String tableName = query.get(2).toLowerCase();
@@ -132,19 +135,19 @@ public class QueryParser {
         String attributeName = query.get(4);
 
         Alter alter = new Alter();
-        return alter.alterTable(server.getTable(tableName, server.getCurrentDatabase()),
-                alterationType, attributeName, server);
+        return alter.alterTable(queryHandler.getTable(tableName, queryHandler.getCurrentDatabase()),
+                alterationType, attributeName, queryHandler);
     }
 
-    public boolean parseInsert(DBServer server, List<String> query) {
+    public boolean parseInsert(QueryHandler queryHandler, List<String> query) {
         if (!query.get(1).equalsIgnoreCase(("into")) || !checkAlphaNumeric(query.get(2))
                 || isThereReservedWord(query.get(2)) || !query.get(3).equalsIgnoreCase(("values"))) {
-            server.setErrorLine("Invalid query terms or value names.");
+            queryHandler.setErrorLine("Invalid query terms or value names.");
             return false;
         }
 
         if (!query.get(4).equalsIgnoreCase("(")) {
-            server.setErrorLine("Missing opening bracket for value list.");
+            queryHandler.setErrorLine("Missing opening bracket for value list.");
             return false;
         }
         String tableName = query.get(2).toLowerCase();
@@ -153,23 +156,23 @@ public class QueryParser {
         int index = 5;
 
         if (!query.get(query.size() - 2).equalsIgnoreCase(")")) {
-            server.setErrorLine("Missing closing bracket for value list.");
+            queryHandler.setErrorLine("Missing closing bracket for value list.");
             return false;
         }
         valueList = addToList(valueList, query, index, ")");
         if (!isListValid(valueList, "ValueList")) {
-            server.setErrorLine("Entered invalid values.");
+            queryHandler.setErrorLine("Entered invalid values.");
             return false;
         }
 
         Insert insert = new Insert();
         List<String> cleanValueList = removeSpecialCharacters(valueList, query);
         System.out.println(cleanValueList);
-        return insert.insertIntoTable(server, server.getTable(tableName,
-                server.getCurrentDatabase()), cleanValueList);
+        return insert.insertIntoTable(queryHandler, queryHandler.getTable(tableName,
+                queryHandler.getCurrentDatabase()), cleanValueList);
     }
 
-    public boolean parseSelect(DBServer server, List<String> query) {
+    public boolean parseSelect(QueryHandler queryHandler, List<String> query) {
         List<String> wildAttributeList = new ArrayList<String>();
         int index = 1;
 
@@ -183,7 +186,7 @@ public class QueryParser {
                 || !checkAlphaNumeric(query.get(index + 1))
                 || isThereReservedWord(query.get(index + 1))
                 || (!isListValid(wildAttributeList, "WildAttributeList") && !query.get(1).equals("*"))) {
-            server.setErrorLine("Invalid query terms or value names.");
+            queryHandler.setErrorLine("Invalid query terms or value names.");
             return false;
         }
         index++;
@@ -192,13 +195,12 @@ public class QueryParser {
         index++;
 
         if ((query.size() - 1) != (index)) {
-            // query.size() - 1 to get to where index should be when list = *
             if (!query.get(index).equalsIgnoreCase("where")) {
-                server.setErrorLine("Invalid query term.");
+                queryHandler.setErrorLine("Invalid query term.");
                 return false;
             }
-            if (!checkCondtionBrackets(server, query, index + 1)
-                    || !isConditionValid(server, query, index + 1)) {
+            if (!checkConditionBrackets(queryHandler, query, index + 1)
+                    || !isConditionValid(queryHandler, query, index + 1)) {
                 return false;
             }
         }
@@ -206,14 +208,14 @@ public class QueryParser {
 
         Select select = new Select();
         List<String> cleanWildAttributeList = removeSpecialCharacters(wildAttributeList, query);
-        return select.selectRecords(server.getTable(tableName, server.getCurrentDatabase()),
-                cleanWildAttributeList, conditionList, server);
+        return select.selectRecords(queryHandler.getTable(tableName, queryHandler.getCurrentDatabase()),
+                cleanWildAttributeList, conditionList, queryHandler);
     }
 
-    public boolean parseUpdate(DBServer server, List<String> query) {
+    public boolean parseUpdate(QueryHandler queryHandler, List<String> query) {
         if (!checkAlphaNumeric(query.get(1)) || isThereReservedWord(query.get(1))
                 || !query.get(2).equalsIgnoreCase(("set"))) {
-            server.setErrorLine("Invalid query terms or value names.");
+            queryHandler.setErrorLine("Invalid query terms or value names.");
             return false;
         }
         String tableName = query.get(1).toLowerCase();
@@ -225,43 +227,43 @@ public class QueryParser {
         index = nameValueList.size() + index;
         if (!query.get(index).equalsIgnoreCase("where")
                 || !isListValid(nameValueList, "NameValueList")) {
-            server.setErrorLine("Invalid query terms or value names.");
+            queryHandler.setErrorLine("Invalid query terms or value names.");
             return false;
         }
         index++;
 
-        if (!checkCondtionBrackets(server, query, index)
-                || !isConditionValid(server, query, index)) {
+        if (!checkConditionBrackets(queryHandler, query, index)
+                || !isConditionValid(queryHandler, query, index)) {
             return false;
         }
 
         List<String> conditionList = parseCondition(query, index);
         Update update = new Update();
         List<String> cleanNameValueList = removeSpecialCharacters(nameValueList, query);
-        return update.updateTable(server.getTable(tableName, server.getCurrentDatabase()),
-                cleanNameValueList, conditionList, server);
+        return update.updateTable(queryHandler.getTable(tableName, queryHandler.getCurrentDatabase()),
+                cleanNameValueList, conditionList, queryHandler);
     }
 
-    public boolean parseDelete(DBServer server, List<String> query) {
+    public boolean parseDelete(QueryHandler queryHandler, List<String> query) {
         if (!query.get(1).equalsIgnoreCase(("from")) || !checkAlphaNumeric(query.get(2))
                 || isThereReservedWord(query.get(2)) || !query.get(3).equalsIgnoreCase("where")) {
-            server.setErrorLine("Invalid query terms or value names.");
+            queryHandler.setErrorLine("Invalid query terms or value names.");
             return false;
         }
         String tableName = query.get(2).toLowerCase();
 
-        if (!checkCondtionBrackets(server, query, 4)
-                || !isConditionValid(server, query, 4)) {
+        if (!checkConditionBrackets(queryHandler, query, 4)
+                || !isConditionValid(queryHandler, query, 4)) {
             return false;
         }
 
         List<String> conditionList = parseCondition(query, 4);
         Delete delete = new Delete();
-        return delete.deleteRecord(server.getTable(tableName, server.getCurrentDatabase()),
-                conditionList, server);
+        return delete.deleteRecord(queryHandler.getTable(tableName, queryHandler.getCurrentDatabase()),
+                conditionList, queryHandler);
     }
 
-    public boolean parseJoin(DBServer server, List<String> query) {
+    public boolean parseJoin(QueryHandler queryHandler, List<String> query) {
         if (query.size() != 9 || !checkAlphaNumeric(query.get(1))
                 || !query.get(2).equalsIgnoreCase("and")
                 || !checkAlphaNumeric(query.get(3)) || isThereReservedWord(query.get(3))
@@ -269,7 +271,7 @@ public class QueryParser {
                 || !checkAlphaNumeric(query.get(5)) || isThereReservedWord(query.get(5))
                 || !query.get(6).equalsIgnoreCase("and")
                 || !checkAlphaNumeric(query.get(7)) || isThereReservedWord(query.get(7))) {
-            server.setErrorLine("Invalid query terms or value names.");
+            queryHandler.setErrorLine("Invalid query terms or value names.");
             return false;
         }
         String fileNameOne = query.get(1).toLowerCase();
@@ -279,8 +281,8 @@ public class QueryParser {
         String attributeNameTwo = query.get(7).toLowerCase();
 
         Join join = new Join();
-        return join.joinTables(server.getTable(fileNameOne, server.getCurrentDatabase()),
-                server.getTable(fileNameTwo, server.getCurrentDatabase()), attributeNameOne, attributeNameTwo, server);
+        return join.joinTables(queryHandler.getTable(fileNameOne, queryHandler.getCurrentDatabase()),
+                queryHandler.getTable(fileNameTwo, queryHandler.getCurrentDatabase()), attributeNameOne, attributeNameTwo, queryHandler);
 
     }
 
@@ -311,7 +313,7 @@ public class QueryParser {
         return parsedConditions;
     }
 
-    public boolean checkCondtionBrackets(DBServer server, List<String> query, int startIndex) {
+    public boolean checkConditionBrackets(QueryHandler queryHandler, List<String> query, int startIndex) {
         int openBracketCount = 0;
         int closeBracketCount = 0;
 
@@ -322,7 +324,7 @@ public class QueryParser {
                 if (i != startIndex && (!query.get(i - 1).equals("(")
                         && (!query.get(i - 1).equalsIgnoreCase("and")
                         && !query.get(i - 1).equalsIgnoreCase("or")))) {
-                    server.setErrorLine("Opening bracket in wrong place.");
+                    queryHandler.setErrorLine("Opening bracket in wrong place.");
                     return false;
                 }
                 openBracketCount++;
@@ -330,20 +332,20 @@ public class QueryParser {
                 if (i != (query.size() - 2) && (!query.get(i + 1).equals(")")
                         && !query.get(i + 1).equalsIgnoreCase("and")
                         && !query.get(i + 1).equalsIgnoreCase("or"))) {
-                    server.setErrorLine("Closing bracket in wrong place.");
+                    queryHandler.setErrorLine("Closing bracket in wrong place.");
                     return false;
                 }
                 closeBracketCount++;
             }
         }
         if (openBracketCount != closeBracketCount) {
-            server.setErrorLine("Too many/not enough brackets.");
+            queryHandler.setErrorLine("Too many/not enough brackets.");
             return false;
         }
         return true;
     }
 
-    public boolean isConditionValid(DBServer server, List<String> query, int startIndex) {
+    public boolean isConditionValid(QueryHandler queryHandler, List<String> query, int startIndex) {
         String[] comparators = {"==", ">", "<", ">=", "<=", "!=", "LIKE"};
         List<String> trimmedQuery = (new ArrayList<String>(query)).subList(startIndex, query.size());
 
@@ -355,20 +357,20 @@ public class QueryParser {
             String currentToken = trimmedQuery.get(i);
             if (!currentToken.equals(";") && !currentToken.equals(" ")) {
                 if (((i - 1) % 4) == 0 && !isTokenComparator(currentToken, comparators)) {
-                    server.setErrorLine("Please use correct comparator.");
+                    queryHandler.setErrorLine("Please use correct comparator.");
                     return false; }
                 else if (((i - 2) % 4) == 0 && !checkValue(currentToken)) {
-                    server.setErrorLine("Invalid value for comparison.");
+                    queryHandler.setErrorLine("Invalid value for comparison.");
                     return false; }
                 else if (((i + 1) % 4) == 0
                         && !currentToken.equalsIgnoreCase("and")
                         && !currentToken.equalsIgnoreCase("or")) {
-                    server.setErrorLine("Conditions can only be joined by AND/OR.");
+                    queryHandler.setErrorLine("Conditions can only be joined by AND/OR.");
                     return false; }
                 else if (i % 4 == 0
                         && (!checkAlphaNumeric(currentToken)
                         || isThereReservedWord(currentToken))) {
-                    server.setErrorLine("Invalid attribute name.");
+                    queryHandler.setErrorLine("Invalid attribute name.");
                     return false; }
             }
         }
@@ -471,11 +473,8 @@ public class QueryParser {
             }
         }
         // boolean literal & "NULL"
-        if (isNumber || isString || token.equalsIgnoreCase("true")
-                || token.equalsIgnoreCase("false") || token.equalsIgnoreCase("null")) {
-            return true;
-        }
-        return false;
+        return isNumber || isString || token.equalsIgnoreCase("true")
+                || token.equalsIgnoreCase("false") || token.equalsIgnoreCase("null");
     }
 
     public boolean checkAlphaNumeric(String token) {

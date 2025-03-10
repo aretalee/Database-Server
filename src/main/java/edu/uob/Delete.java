@@ -5,18 +5,18 @@ import java.util.List;
 
 public class Delete {
 
-    public boolean deleteRecord(Table chosenTable, List<String> conditionList, DBServer server) {
+    public boolean deleteRecord(Table chosenTable, List<String> conditionList, QueryHandler queryHandler) {
 
         if (chosenTable == null) {
-            server.setErrorLine("Requested table does not exist.");
+            queryHandler.setErrorLine("Requested table does not exist.");
             return false;
         }
 
         ConditionHandler conditionHandler = new ConditionHandler();
-        List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList, server);
+        List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList, queryHandler);
 
         List<List<String>> rowObjects = new ArrayList<List<String>>();
-        if (!getRowObjects(chosenTable, rowObjects, rowsToDelete, server)) {
+        if (!getRowObjects(chosenTable, rowObjects, rowsToDelete, queryHandler)) {
             return false;
         }
 
@@ -26,17 +26,17 @@ public class Delete {
         }
 
         if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
-            server.setErrorLine("Could not delete record, please try again.");
+            queryHandler.setErrorLine("Could not delete record, please try again.");
             return false;
         }
         return true;
     }
 
-    public boolean getRowObjects(Table table, List<List<String>> rowObjects, List<Integer> rowsToDelete, DBServer server) {
+    public boolean getRowObjects(Table table, List<List<String>> rowObjects, List<Integer> rowsToDelete, QueryHandler queryHandler) {
         if (!rowsToDelete.isEmpty()) {
             for (Integer index : rowsToDelete) {
                 if (index == -1) {
-                    server.setErrorLine("Requested column(s) in condition does not exist.");
+                    queryHandler.setErrorLine("Requested column(s) in condition does not exist.");
                     return false;
                 }
                 List<String> row = table.getTableFromList(index);

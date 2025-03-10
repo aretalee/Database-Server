@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ConditionHandler {
 
-    public List<Integer> filterTable(Table chosenTable, List<String> conditions, DBServer server) {
+    public List<Integer> filterTable(Table chosenTable, List<String> conditions, QueryHandler queryHandler) {
 
         if (conditions.isEmpty()) {
             return null;
@@ -28,7 +28,7 @@ public class ConditionHandler {
                 String value = conditions.get(index + 2);
                 List<Integer> validRows = evaluateCondition(chosenTable, attribute, comparator, value);
                 if (!validRows.isEmpty() && validRows.get(0) == -1) {
-                    server.setErrorLine("Requested column in conditions does not exist.");
+                    queryHandler.setErrorLine("Requested column in conditions does not exist.");
                     return validRows;
                 }
                 resultList.add(validRows);

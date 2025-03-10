@@ -7,15 +7,15 @@ public class Select {
 
     private boolean printAllRows = false;
 
-    public boolean selectRecords(Table chosenTable, List<String> chosenHeaders, List<String> conditionList, DBServer server) {
+    public boolean selectRecords(Table chosenTable, List<String> chosenHeaders, List<String> conditionList, QueryHandler queryHandler) {
 
         if (chosenTable == null) {
-            server.setErrorLine("Requested table does not exist.");
+            queryHandler.setErrorLine("Requested table does not exist.");
             return false;
         }
 
         ConditionHandler conditionHandler = new ConditionHandler();
-        List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList, server);
+        List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList, queryHandler);
 
         if (conditionList.isEmpty()) {
             printAllRows = true;
@@ -24,8 +24,8 @@ public class Select {
         if (chosenHeaders.get(0).equals("*")) {
             List<String> allColumns = formatOutputTable(chosenTable.accessTable(),
                     chosenTable.accessColumnHeaders(), rowsToSelect);
-            server.setTableForPrinting(allColumns);
-            server.setPrintBoolean(true);
+            queryHandler.setTableForPrinting(allColumns);
+            queryHandler.setPrintBoolean(true);
 
         } else {
             List<Integer> headerIndexes = new ArrayList<Integer>();
@@ -33,7 +33,7 @@ public class Select {
 
             for (String header : chosenHeaders) {
                 if (!chosenTable.hasRequestedHeader(header)) {
-                    server.setErrorLine("Requested column does not exist.");
+                    queryHandler.setErrorLine("Requested column does not exist.");
                     return false;
                 }
                 headerIndexes.add(ColumnIndexFinder.findColumnIndex(chosenTable, header));
@@ -50,8 +50,8 @@ public class Select {
                 toBePrinted.add(rowValues);
             }
             List<String> selectedColumns = formatOutputTable(toBePrinted, chosenHeaders, rowsToSelect);
-            server.setTableForPrinting(selectedColumns);
-            server.setPrintBoolean(true);
+            queryHandler.setTableForPrinting(selectedColumns);
+            queryHandler.setPrintBoolean(true);
         }
         return true;
     }

@@ -5,14 +5,14 @@ import java.util.List;
 
 public class Use {
 
-    public boolean switchDatabases(String databasesPath, String databaseName, DBServer server) {
+    public boolean switchDatabases(String databasesPath, String databaseName, QueryHandler queryHandler) {
 
         File databases = new File(databasesPath);
         File[] allDatabases = databases.listFiles();
         File requestedDatabase = null;
 
         if(allDatabases == null || allDatabases.length == 0) {
-            server.setErrorLine("No databases found.");
+            queryHandler.setErrorLine("No databases found.");
             return false;
         }
 
@@ -23,24 +23,24 @@ public class Use {
         }
 
         if (requestedDatabase == null) {
-            server.setErrorLine("Requested database does not exist.");
+            queryHandler.setErrorLine("Requested database does not exist.");
             return false;
         }
 
-        Database newDatabase = doesDatabaseExist(databaseName, server);
+        Database newDatabase = doesDatabaseExist(databaseName, queryHandler);
 
         if (newDatabase == null) {
             newDatabase = new Database(requestedDatabase);
-            server.addDatabase(newDatabase);
+            queryHandler.addDatabase(newDatabase);
         }
 
-        server.setCalledUseCommand(true);
+        queryHandler.setCalledUseCommand(true);
         return true;
     }
 
-    public Database doesDatabaseExist(String databaseName, DBServer server) {
+    public Database doesDatabaseExist(String databaseName, QueryHandler queryHandler) {
 
-        List<Database> databases = server.getAllDatabases();
+        List<Database> databases = queryHandler.getAllDatabases();
         for (Database database : databases) {
             if(database.getDatabaseName().equals(databaseName)) {
                 return database;

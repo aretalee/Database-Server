@@ -3,7 +3,6 @@ package edu.uob;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Table {
 
@@ -53,17 +52,13 @@ public class Table {
         return tableList.indexOf(row);
     }
 
-    public List<String> getTableRow(int index) {
-        return tableList.get(index);
-    }
-
     public List<String> getTableFromList(int index) {
         return tableList.get(index);
     }
 
     public void addColumnToRows() {
         for(List<String> row : tableList) {
-            row.add("NULL");
+            row.add("");
         }
     }
 
@@ -115,10 +110,7 @@ public class Table {
 
     public boolean loadTableData() {
         FileHandler fileHandler = new FileHandler();
-        if (!fileHandler.readFile(tableFile, this)) {
-            return false;
-        }
-        return true;
+        return fileHandler.readFile(tableFile, this);
     }
 
     public boolean saveToFile(File file) {
