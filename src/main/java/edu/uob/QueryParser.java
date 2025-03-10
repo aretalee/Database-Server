@@ -14,11 +14,10 @@ public class QueryParser {
                               , "add", "true", "false", "null"};
 
     public boolean parseQuery(List<String> query, DBServer server) {
-        if (!isThereSemicolon(query.get(query.size() - 1))) {
+        if (!query.get(query.size() - 1).equalsIgnoreCase(";")) {
             server.setErrorLine("Missing semicolon at end of query.");
             return false;
         }
-
         boolean queryValid;
         switch (query.get(0).toLowerCase()) {
             case "use" ->  queryValid =  parseUse(server, query);
@@ -46,7 +45,6 @@ public class QueryParser {
             server.setErrorLine("Invalid database name.");
             return false;
         }
-
         String databaseName = query.get(1).toLowerCase();
         server.setCurrentDatabase(databaseName);
         Use use = new Use();
@@ -65,20 +63,17 @@ public class QueryParser {
             || (query.get(1).equalsIgnoreCase("table") && query.size() < 4)) {
             server.setErrorLine("Invalid query length.");
             return false;
-        }
-        else if (!checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))) {
+        } else if (!checkAlphaNumeric(query.get(2)) || isThereReservedWord(query.get(2))) {
             server.setErrorLine("Invalid database/table name.");
             return false;
         }
         String fileName = query.get(2).toLowerCase();
-
         if (query.size() > 4) {
             if (!query.get(3).equals("(")) {
                 server.setErrorLine("Missing opening bracket for attribute list.");
                 return false;
             }
             int index = 4;
-
             attributeList = addToList(attributeList, query, index, ")");
             if (!query.get(query.size() - 2).equals(")")) {
                 server.setErrorLine("Missing closing bracket for attribute list.");
@@ -88,7 +83,6 @@ public class QueryParser {
                 return false;
             }
         }
-
         Create create = new Create();
         if (query.get(1).equalsIgnoreCase("database")) {
             return create.createDatabase(server.getStorageFolderPath(), fileName, server);
@@ -347,7 +341,7 @@ public class QueryParser {
                     return false; }
                 else if (i % 4 == 0
                         && (!checkAlphaNumeric(currentToken)
-                        && isThereReservedWord(currentToken))) {
+                        || isThereReservedWord(currentToken))) {
                     server.setErrorLine("Invalid attribute name.");
                     return false; }
             }
@@ -411,12 +405,12 @@ public class QueryParser {
         if (listType.equalsIgnoreCase("AttributeList")) {
             if (index == 0 && chosenList.get(index).equalsIgnoreCase("id")) { return true; }
             else if ((index % 2 == 0 && index != 0)
-                    && !chosenList.get(index).equals(",")) { return false; }
-        } else {
-            if (index % 2 != 0 && !chosenList.get(index).equals(",")) { return false; }
+                    && chosenList.get(index).equals(",")) { return true; }
+        } else if (listType.equalsIgnoreCase("WildAttributeList")) {
+            if (index % 2 != 0 && chosenList.get(index).equals(",")) { return true; }
         }
         return (checkAlphaNumeric(chosenList.get(index))
-                || !isThereReservedWord(chosenList.get(index)));
+                && !isThereReservedWord(chosenList.get(index)));
     }
 
     public boolean checkNameValueList(List<String> chosenList, int index) {
@@ -474,10 +468,6 @@ public class QueryParser {
             }
         }
         return false;
-    }
-
-    public boolean isThereSemicolon(String token) {
-        return token.equalsIgnoreCase(";");
     }
 
 }

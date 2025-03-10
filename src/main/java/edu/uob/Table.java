@@ -11,7 +11,6 @@ public class Table {
     private File tableFile;
     private String tableName;
     private String inWhichDatabase;
-    // File object or use file path?
     private int latestID;
 
     // if creating new file: call CREATE, then make new Table + feed in File from CREATE method
@@ -76,9 +75,9 @@ public class Table {
         return tableList.get(index);
     }
 
-    public void addNullToRows() {
+    public void addColumnToRows() {
         for(List<String> row : tableList) {
-            row.add(null);
+            row.add("");
         }
     }
 
@@ -120,7 +119,6 @@ public class Table {
         return tableFile;
     }
 
-    // can this be combined with below saveToFile?
     public boolean loadTableData() {
         FileHandler fileHandler = new FileHandler();
         if (!fileHandler.readFile(tableFile, this)) {
@@ -130,42 +128,10 @@ public class Table {
         return true;
     }
 
-
     public boolean saveToFile(File file) {
         FileHandler fileHandler = new FileHandler();
         return fileHandler.writeTableToFile(file, this);
     }
-
-
-//    // column name should be case-insensitive when queried, but saved with case
-//
-//    public File insertRecord(File file) {
-//        // same at INSERT (adds new row)
-//
-//        // need to auto-gen ID for e ach row
-//
-//        return file;
-//    }
-//
-//    public File updateRecord(File file) {
-//        // same at UPDATE (updates existing data)
-//
-//        return file;
-//    }
-//
-//    public File alterTableStructure(File file) {
-//        // same at ALTER
-//
-//        return file
-//;
-//    }
-//
-//    public File deleteRecord(File file) {
-//        // same at DELETE
-//
-//        return file;
-//    }
-
 
 }
 

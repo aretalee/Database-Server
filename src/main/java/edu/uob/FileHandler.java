@@ -35,7 +35,6 @@ public class FileHandler {
         return true;
     }
 
-    // should I still throw error if handled?
     public boolean writeTableToFile(File chosenFile, Table currentTable) {
 
         try {
@@ -86,10 +85,12 @@ public class FileHandler {
             for (File tableFile : databaseFolder) {
                 List<String> attributeList = new ArrayList<String>();
                 Table thisTable = new Table(tableFile, attributeList, databaseName);
-                if (!thisTable.loadTableData()) {
-                    return false;
+                if (!thisTable.getTableName().equals(".DS_Store")) {
+                    if (!thisTable.loadTableData()) {
+                        return false;
+                    }
+                    server.addTable(thisTable);
                 }
-                server.addTable(thisTable);
             }
         }
         return true;

@@ -1,7 +1,5 @@
 package edu.uob;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -10,17 +8,18 @@ import java.util.Arrays;
 public class QueryLexer{
 
     String query;
-    String[] specialCharacters = {"(",")",",",";","=","!",">","<"};
+    String[] specialCharacters = {"(", ")", ",", ";", "=", "!", ">", "<"};
+//    String[] terms = {"use", "database", "table", "into", "from", "update", "join", "and", "on", "add", "drop"};
     ArrayList<String> tokens = new ArrayList<String>();
 
     public QueryLexer(String line) {
-        // modify so that query will be updated when constructor is called
         query = line;
     }
 
     public static void main(String args[]) {
 
-        String newQuery = "insert into marks values ('Tim' 80., TRUE);";
+        String newQuery = "update hello set age = 1, the = 'this' where ther > 1;";
+//        String newQuery = "SELECT * FROM STUDENTS WHERE AGE=10 AND MARK>70;";
         QueryLexer lexer = new QueryLexer(newQuery);
         lexer.setup();;
         for (String token : lexer.tokens) {
@@ -57,6 +56,9 @@ public class QueryLexer{
         // so we can be SURE that they are separated by AT LEAST one space (possibly more)
         for(int i = 0; i < specialCharacters.length; i++) {
             input = input.replace(specialCharacters[i], " " + specialCharacters[i] + " ");
+//            String regexString = "\\b" + "\\\\" + specialCharacters[i] + "\\b";
+//            input = input.replaceAll(regexString, " " + specialCharacters[i] + " ");
+
         }
         // Remove any double spaces (the previous padding activity might have introduced some of these)
         while (input.contains("  ")) input = input.replace("  ", " "); // Replace two spaces by one

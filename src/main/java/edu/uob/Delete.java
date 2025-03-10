@@ -12,8 +12,6 @@ public class Delete {
             return false;
         }
 
-//        OldConditionHandler conditionHandler = new OldConditionHandler();
-//        List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList, server);
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList, server);
 

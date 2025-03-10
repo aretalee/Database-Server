@@ -77,26 +77,19 @@ public class DBServer {
     }
 
     public String returnStatement(boolean parserReturnValue) {
-        String returnStatement = "";
+        StringBuilder returnStatement = new StringBuilder();
         if (parserReturnValue) {
-            // print [OK]
-            returnStatement += "[OK]";
-            // print table if needed
+            returnStatement.append("[OK]");
             if (tableForPrinting != null && printTable) {
                 for (String row : tableForPrinting) {
-                    returnStatement += row;
+                    returnStatement.append(row);
                 }
                 printTable = false;
             }
         } else {
-            // print [Error] followed by error message
-            returnStatement =  ("[ERROR]: " + errorLine);
+            returnStatement = new StringBuilder(("[ERROR]: " + errorLine));
         }
-        return returnStatement;
-    }
-
-    public List<Table> getAllTables() {
-        return this.allTables;
+        return returnStatement.toString();
     }
 
     public List<Database> getAllDatabases() {

@@ -11,18 +11,35 @@ public class Update {
             return false;
         }
 
-//        OldConditionHandler conditionHandler = new OldConditionHandler();
-//        List<Integer> rowsToUpdate = conditionHandler.filterTable(chosenTable, conditionList, server);
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToUpdate = conditionHandler.filterTable(chosenTable, conditionList, server);
+        System.out.println(rowsToUpdate);
 
-        if (!editValues(chosenTable, nameValueList, rowsToUpdate, server)) {
+        if (!checkValueListHeaders(chosenTable, nameValueList, server)
+                || !editValues(chosenTable, nameValueList, rowsToUpdate, server)) {
             return false;
         }
 
         if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
             server.setErrorLine("Could not update table, please try again.");
             return false;
+        }
+        return true;
+    }
+
+    public boolean checkValueListHeaders(Table table, List<String> nameValueList, DBServer server) {
+        int attributeIndex = 0;
+        String headerName = nameValueList.get(attributeIndex);
+
+        while (attributeIndex < nameValueList.size()) {
+            if (headerName.equalsIgnoreCase("id")) {
+                server.setErrorLine("Cannot update id column.");
+                return false;
+            } else if (!table.hasRequestedHeader(headerName)) {
+                server.setErrorLine("Requested column(s) in SET does not exist.");
+                return false;
+            }
+            attributeIndex += 2;
         }
         return true;
     }
@@ -34,21 +51,12 @@ public class Update {
         if (!rowsToUpdate.isEmpty()) {
             for (Integer index : rowsToUpdate) {
                 while (attributeIndex < nameValueList.size()) {
-                    String headerName = nameValueList.get(attributeIndex);
-
-                    if (headerName.equalsIgnoreCase("id")) {
-                        server.setErrorLine("Cannot update id column.");
-                        return false;
-                    } else if (!table.hasRequestedHeader(headerName)) {
-                        server.setErrorLine("Requested column(s) in SET does not exist.");
-                        return false;
-                    } else if (index == -1) {
+                    if (index == -1) {
                         server.setErrorLine("Requested column(s) in condition does not exist.");
                         return false;
                     }
-
+                    String headerName = nameValueList.get(attributeIndex);
                     int headerIndex = table.getHeaderIndex(headerName);
-//                    tableList.get(index).set(headerIndex, nameValueList.get(valueIndex));
                     table.updateRowValue(index, headerIndex, nameValueList.get(valueIndex));
                     attributeIndex += 2;
                     valueIndex += 2;

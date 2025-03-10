@@ -5,18 +5,6 @@ import java.util.List;
 
 public class Join {
 
-    // remember to check if table exists + if attributes exist
-//    if (chosenTable == null) {
-//        server.setErrorLine("Requested table does not exist.");
-//        return false;
-//    } else if (!table.accessColumnHeaders().contains(headerName) || !table.accessColumnHeaders().contains(headerNameTwo)) {
-//        server.setErrorLine("Requested column(s) in SET does not exist.");
-//        return false;
-//    }
-
-
-    // check which rows to join
-
     public boolean joinTables(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo, DBServer server) {
 
         if (tableOne == null || tableTwo == null) {
@@ -59,11 +47,13 @@ public class Join {
         List<String> tableTwoValues = getAttributeValues(tableTwo, headerIndexTwo);
         Insert insert = new Insert();
 
+        System.out.println(tableOneValues);
+        System.out.println(tableTwoValues);
 //        for (String tableOneValue : tableOneValues) {
             for (String tableValue : tableOneValues) {
                 System.out.println(tableValue);
                 List<String> thisRow = new ArrayList<String>();
-                if (tableOneValues.contains(tableValue)) {
+                if (tableTwoValues.contains(tableValue)) {
                     thisRow = addNewValues(tableOne.getTableRow(tableOneValues.indexOf(tableValue)), thisRow, headerIndexOne);
                     thisRow = addNewValues(tableTwo.getTableRow(tableTwoValues.indexOf(tableValue)), thisRow, headerIndexTwo);
                 }
@@ -71,13 +61,13 @@ public class Join {
             }
 //        }
 
-        System.out.println(jointTable.accessTable());
 
         // call SELECT to print them out
         Select select = new Select();
         List<String> printAll = new ArrayList<String>();
         printAll.add("*");
-        select.selectRecords(jointTable, printAll, null, server);
+        List<String> conditions = new ArrayList<String>();
+        select.selectRecords(jointTable, printAll, conditions, server);
 
         return true;
     }

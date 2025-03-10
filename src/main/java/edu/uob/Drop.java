@@ -1,7 +1,6 @@
 package edu.uob;
 
 import java.io.*;
-import java.nio.file.Paths;
 
 public class Drop {
 

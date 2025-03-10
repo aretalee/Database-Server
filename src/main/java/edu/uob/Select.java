@@ -14,8 +14,6 @@ public class Select {
             return false;
         }
 
-//        OldConditionHandler conditionHandler = new OldConditionHandler();
-//        List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList, server);
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList, server);
 
