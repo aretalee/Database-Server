@@ -36,8 +36,6 @@ public class Use {
 
         server.setCalledUseCommand(true);
         return true;
-        // should Database instance be created here or in CREATE
-
     }
 
     public Database doesDatabaseExist(String databaseName, DBServer server) {

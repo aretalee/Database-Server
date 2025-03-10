@@ -3,6 +3,7 @@ package edu.uob;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Table {
 
@@ -13,11 +14,6 @@ public class Table {
     private String inWhichDatabase;
     private int latestID;
 
-    // if creating new file: call CREATE, then make new Table + feed in File from CREATE method
-    // if existing file: make new Table + feed in file (using new File(file path) ?), then call load data method
-
-    // is there a way to format table so that this list isn't needed
-    // maybe move attributeList out of constructor?
     public Table(File newTableFile, List<String> attributeList, String databaseName) {
 
         tableList = new ArrayList<List<String>>();
@@ -67,11 +63,11 @@ public class Table {
 
     public void addColumnToRows() {
         for(List<String> row : tableList) {
-            row.add("");
+            row.add("NULL");
         }
     }
 
-    public void removeTableRow(int index) {
+    public void removeColumnFromRow(int index) {
         for (List<String> row : tableList) {
             row.remove(index);
         }

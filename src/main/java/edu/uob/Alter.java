@@ -47,7 +47,7 @@ public class Alter {
             return false;
         }
         table.removeFromColumnHeaders(chosenIndex);
-        table.removeTableRow(chosenIndex);
+        table.removeColumnFromRow(chosenIndex);
         return true;
     }
 }

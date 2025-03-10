@@ -48,15 +48,12 @@ public class Create {
     }
 
     public boolean checkHeadersForDupes(List<String> headers, DBServer server) {
-        // is this needed
         if (headers.isEmpty()) {
             return false;
         }
-
-        // should make comparison case-insensitive (?) -> need to test again
         List<String> lowercaseHeaders = makeHeadersLowerCase(headers);
         for (String header : lowercaseHeaders) {
-            if (Collections.frequency(headers, header) > 1) {
+            if (Collections.frequency(lowercaseHeaders, header) > 1) {
                 if (header.equalsIgnoreCase("id")) {
                     server.setErrorLine("Cannot set id as header in table.");
                 } else {

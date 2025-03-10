@@ -17,8 +17,8 @@ public class DBServer {
 
     private static final char END_OF_TRANSMISSION = 4;
     private String storageFolderPath;
-    private boolean calledUseCommand = false;
 
+    private boolean calledUseCommand = false;
     private List<Database> allDatabases = new ArrayList<Database>();
     private List<Table> allTables = new ArrayList<Table>();
     private String currentDatabase;
@@ -45,7 +45,6 @@ public class DBServer {
             FileHandler fileHandler = new FileHandler();
             if (!fileHandler.populateWithExistingFiles(this)) {
                 System.out.println("Unable to access existing files.");
-                // is this correct?
             }
         } catch(IOException ioe) {
             System.out.println("Can't seem to create database storage folder " + storageFolderPath);
@@ -58,7 +57,7 @@ public class DBServer {
     *
     * <p>This method handles all incoming DB commands and carries out the required actions.
     */
-    public String handleCommand(String command) throws IOException {
+    public String handleCommand(String command) {
         // TODO implement your server logic here
 
         QueryLexer queryLexer = new QueryLexer(command);
