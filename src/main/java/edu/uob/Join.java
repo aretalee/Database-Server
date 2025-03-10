@@ -16,19 +16,7 @@ public class Join {
         int headerIndexOne = tableOne.getHeaderIndex(attributeOne);
         int headerIndexTwo = tableTwo.getHeaderIndex(attributeTwo);
 
-        // maybe loop through foreign key row in table 2
-        // then check table one to see if there's a match
-        // if found a match -> add table 1 content first then add table two content behind
-
-        List<String> tableOneValues = getAttributeValues(tableOne, headerIndexOne);
-        List<String> tableTwoValues = getAttributeValues(tableTwo, headerIndexTwo);
         Insert insert = new Insert();
-
-        // need to make sure/edit so that this works with 1-to-many + many-to-many
-
-        // JOIN coursework AND marks ON submission AND id;
-        // JOIN cause AND result ON number AND mark;
-
         for (List<String> rowOne : tableOne.accessTable()) {
             for (List<String> rowTwo : tableTwo.accessTable()) {
                 List<String> thisRow = new ArrayList<String>();
@@ -39,8 +27,6 @@ public class Join {
                 }
             }
         }
-
-
         outputJointTable(jointTable, server);
 
         return true;
@@ -49,6 +35,9 @@ public class Join {
     public boolean areThereJoinErrors(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo, DBServer server) {
         if (tableOne == null || tableTwo == null) {
             server.setErrorLine("One or more requested tables do not exist.");
+            return true;
+        } else if (tableOne.getTableName().equals(tableTwo.getTableName())) {
+            server.setErrorLine("Cannot join the same table.");
             return true;
         } else if (!tableOne.hasRequestedHeader(attributeOne)
                 || !tableTwo.hasRequestedHeader(attributeTwo)) {

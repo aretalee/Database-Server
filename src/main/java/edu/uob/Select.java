@@ -39,13 +39,10 @@ public class Select {
                 headerIndexes.add(ColumnIndexFinder.findColumnIndex(chosenTable, header));
             }
 
-            System.out.print(chosenTable.accessTable());
             for (List<String> row : chosenTable.accessTable()) {
                 List<String> rowValues = new ArrayList<String>();
-//                System.out.print(row);
 
                 for (int currentIndex : headerIndexes) {
-                    System.out.print(row.get(currentIndex));
                     if (currentIndex != -1) {
                         rowValues.add(row.get(currentIndex));
                     }

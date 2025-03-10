@@ -30,7 +30,6 @@ public class Table {
         }
         inWhichDatabase = databaseName;
         latestID = 0;
-//        setID();
 
     }
 
@@ -87,11 +86,11 @@ public class Table {
     }
 
     public boolean hasRequestedHeader(String header) {
-        return columnHeaders.contains(header);
+        return columnHeaders.contains(header.toLowerCase());
     }
 
     public int getHeaderIndex(String header) {
-        return columnHeaders.indexOf(header);
+        return columnHeaders.indexOf(header.toLowerCase());
     }
 
     public void addToColumnHeaders(String columnHeader) {

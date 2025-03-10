@@ -28,7 +28,7 @@ public class Update {
 
     public boolean checkValueListHeaders(Table table, List<String> nameValueList, DBServer server) {
         int attributeIndex = 0;
-        String headerName = nameValueList.get(attributeIndex);
+        String headerName = nameValueList.get(attributeIndex).toLowerCase();
 
         while (attributeIndex < nameValueList.size()) {
             if (headerName.equalsIgnoreCase("id")) {

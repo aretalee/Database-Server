@@ -1,6 +1,7 @@
 package edu.uob;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,7 +48,14 @@ public class Create {
     }
 
     public boolean checkHeadersForDupes(List<String> headers, DBServer server) {
-        for (String header : headers) {
+        // is this needed
+        if (headers.isEmpty()) {
+            return false;
+        }
+
+        // should make comparison case-insensitive (?) -> need to test again
+        List<String> lowercaseHeaders = makeHeadersLowerCase(headers);
+        for (String header : lowercaseHeaders) {
             if (Collections.frequency(headers, header) > 1) {
                 if (header.equalsIgnoreCase("id")) {
                     server.setErrorLine("Cannot set id as header in table.");
@@ -58,6 +66,14 @@ public class Create {
             }
         }
         return false;
+    }
+
+    public List<String>  makeHeadersLowerCase(List<String> headers) {
+        List<String> lowerCase = new ArrayList<String>();
+        for (String header : headers) {
+            lowerCase.add(header.toLowerCase());
+        }
+        return lowerCase;
     }
 
 }

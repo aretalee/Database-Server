@@ -23,7 +23,7 @@ public class ConditionHandler {
                 resultList.add(thisOp);
                 index += 1;
             } else {
-                String attribute = conditions.get(index);
+                String attribute = conditions.get(index).toLowerCase();
                 String comparator = conditions.get(index + 1);
                 String value = conditions.get(index + 2);
                 List<Integer> validRows = evaluateCondition(chosenTable, attribute, comparator, value);
