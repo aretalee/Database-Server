@@ -34,17 +34,6 @@ public class Table {
 
     }
 
-//    public void setID() {
-//        if (tableList.isEmpty()) {
-//            this.latestID = 0;
-//        }
-////        else {
-////            List<String> fistRow = tableList.get(tableList.size() - 1);
-////            String id = lastRow.get(0);
-////            this.latestID = Integer.parseInt(id);
-////        }
-//    }
-
     public String getTableName() {
         return tableName;
     }

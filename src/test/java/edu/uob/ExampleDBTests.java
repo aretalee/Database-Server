@@ -229,7 +229,6 @@ public class ExampleDBTests {
         sendCommandToServer("INSERT INTO result VALUES ('Fantasy', 1.12);");
         sendCommandToServer("INSERT INTO result VALUES ('Mystery', 1.10);");
         String response = sendCommandToServer("JOIN cause AND result ON number AND mark;");
-        System.out.println(response);
         assertTrue(response.contains("[OK]"), "A valid query was made, however an [OK] tag was not returned");
         assertFalse(response.contains("[ERROR]"), "A valid query was made, however an [ERROR] tag was returned");
         assertTrue(response.contains("cause.name"), "There should be a cause.name header in the table");

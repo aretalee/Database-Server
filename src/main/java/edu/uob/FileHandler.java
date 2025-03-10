@@ -25,7 +25,7 @@ public class FileHandler {
                     for(String item : splitLine) {
                         currentTable.addToColumnHeaders(item);
                     }
-                } else {
+                } else if (lineCounter >= 3) {
                     List<String> thisRow = new ArrayList<String>(Arrays.asList(splitLine));
                     currentTable.addToTableList(thisRow);
                 }
