@@ -17,7 +17,8 @@ public class QueryLexer{
 
     public static void main(String args[]) {
 
-        String newQuery = "update hello set age = 1, the = 'this' where ther > 1;";
+        String newQuery = "CREATE TABLE marks (value height);";
+//        String newQuery = "update hello set age = 1, the = 'this' where ther > 1;";
 //        String newQuery = "SELECT * FROM STUDENTS WHERE AGE=10 AND MARK>70;";
         QueryLexer lexer = new QueryLexer(newQuery);
         lexer.setup();;

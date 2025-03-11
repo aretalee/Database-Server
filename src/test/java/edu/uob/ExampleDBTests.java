@@ -237,5 +237,404 @@ public class ExampleDBTests {
         assertTrue(response.contains("Fantasy"), "There should be a title called Fantasy in the table");
     }
 
+    @Test
+    public void testIDUpdate() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (name, mark, pass);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Simon', 65, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Sion', 55, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Rob', 35, FALSE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Chris', 20, FALSE);");
+        sendCommandToServer("DELETE FROM marks WHERE mark<21;");
+        sendCommandToServer("INSERT INTO marks VALUES ('Chris', 20, FALSE);");
+        String response = sendCommandToServer("SELECT * FROM marks;");
+        assertTrue(response.contains("[OK]"), "A valid query was made, however an [OK] tag was not returned");
+        assertFalse(response.contains("[ERROR]"), "A valid query was made, however an [ERROR] tag was returned");
+        assertTrue(response.contains("5"), "There should be an id = 5 in the table");
+        assertFalse(response.contains("4"), "There should not be an id = 4 in the table, as corresponding row has been deleted");
+    }
+
+
+
+    // below tests check if errors in query structure or malformed inputs are caught
+
+    @Test
+    public void testInvalidQuery1() {
+        String response = sendCommandToServer("INSERT INTO marks VALUES ('Simon', 65, TRUE);");
+        // calling any other command before USE or CREATE DATABASE
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery2() {
+        String response = sendCommandToServer("USE data;");
+        // calling USE on database that doesn't exist
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery3() {
+        String response = sendCommandToServer("USE data");
+        // not enough tokens for USE
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery4() {
+        String response = sendCommandToServer("USE dat*a;");
+        // invalid database name
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery5() {
+        String response = sendCommandToServer("US data;");
+        // first word wrong
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery6() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        String response = sendCommandToServer("USEdat*a;");
+        // no space after USE
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery7() {
+        String randomName = generateRandomName();
+        String response = sendCommandToServer("CREAE DATABASE " + randomName + ";");
+        // wrong first word
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery8() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        String response = sendCommandToServer("USE" + randomName + ";");
+        // no space after USE
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery9() {
+        String randomName = generateRandomName();
+        String response = sendCommandToServer("CREATEDATABASE " + randomName + ";");
+        // no space after CREATE
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery10() {
+        String randomName = generateRandomName();
+        String response = sendCommandToServer("CREATE DATABASE" + randomName + ";");
+        // no space after DATABASE
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery11() {
+        String randomName = generateRandomName();
+        String response = sendCommandToServer("CREATE DATABASE" + randomName);
+        // missing semicolon
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery12() {
+        String response = sendCommandToServer("CREATE DATABASE ma%k ;");
+        // invalid database name
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery13() {
+        String response = sendCommandToServer("CREATE DATAASE ma%k ;");
+        // 2nd word not database
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery14() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("CREATETABLE marks;");
+        // no space before table
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery15() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("CREATE TALE marks;");
+        // 2nd word not table
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery16() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("CREATE TABLEmarks;");
+        // no space before table name
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery17() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("CREATE TABLE marks");
+        // missing semicolon
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery18() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("CREATE TABLE mar(ks;");
+        // invalid table name
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery19() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("CREATE TABLE marks (value;");
+        // missing closing bracket
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery20() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("CREATE TABLE marks value);");
+        // missing opening bracket
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery21() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("CREATE TABLE marks (val&%ue);");
+        // invalid attribute name
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery22() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("CREATE TABLE marks (value height);");
+        // missing comma between attributes
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery23() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("DROPDATABASE " + randomName + ";");
+        // no space after drop
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery24() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("DROP DATABASE" + randomName + ";");
+        // no space after database
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery25() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("DRP DATABASE " + randomName + ";");
+        // first word wrong
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery26() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("DR0P DAABASE " + randomName + ";");
+        // 2nd word not database or table
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery27() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        String response = sendCommandToServer("DR0P TABLE ma898*;");
+        // invalid database/table name
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery28() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (value, height);");
+        String response = sendCommandToServer("ALER TABLE marks ADD age;");
+        // first word wrong
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery29() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (value, height);");
+        String response = sendCommandToServer("ALTER BEET marks ADD age;");
+        // 2nd word not table
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery30() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (value, height);");
+        String response = sendCommandToServer("ALTERTABLE marks ADD age;");
+        // no space after alter
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery31() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (value, height);");
+        String response = sendCommandToServer("ALTER TABLEmarks ADD age;");
+        // no space after TABLE
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery32() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (value, height);");
+        String response = sendCommandToServer("ALTER TABLE marksADD age;");
+        // no space before alteration type
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery33() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (value, height);");
+        String response = sendCommandToServer("ALTER TABLE marks ADDage;");
+        // no space after alteration type
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery34() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (value, height);");
+        String response = sendCommandToServer("ALTER TABLE mark(s ADD age;");
+        // invalid table name
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery35() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (value, height);");
+        String response = sendCommandToServer("ALTER TABLE marks ADD ag)e;");
+        // invalid attribute name
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    @Test
+    public void testInvalidQuery36() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (value, height);");
+        String response = sendCommandToServer("ALTER TABLE marks AD age;");
+        // alteration type not ADD/DROP
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    // tested invalid query entries up until ALTER
+    // should start again at INSERT INTO
 
 }

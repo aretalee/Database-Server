@@ -381,7 +381,8 @@ public class QueryParser {
 
     public boolean checkValueLists(List<String> chosenList, int index) {
         if (index % 2 == 0 && checkValue(chosenList.get(index))) { return true; }
-        else return chosenList.get(index).equals(",");
+        else if (index % 2 != 0 && chosenList.get(index).equals(",")) { return true; }
+        else return false;
     }
 
     public boolean checkAttributeLists(List<String> chosenList, int index, String listType) {
@@ -389,18 +390,20 @@ public class QueryParser {
             if (index == 0 && chosenList.get(index).equalsIgnoreCase("id")) { return true; }
             else if ((index % 2 == 0 && index != 0)
                     && chosenList.get(index).equals(",")) { return true; }
+            else if (index % 2 != 0 && checkPlainText(chosenList.get(index))) { return true; }
         } else if (listType.equalsIgnoreCase("WildAttributeList")) {
             if (index % 2 != 0 && chosenList.get(index).equals(",")) { return true; }
+            else if (index % 2 == 0 && checkPlainText(chosenList.get(index))) { return true; }
         }
-        return (checkPlainText(chosenList.get(index)));
+        return false;
     }
 
     public boolean checkNameValueList(List<String> chosenList, int index) {
         if (((index - 1) % 4) == 0 && chosenList.get(index).equals("=")) { return true; }
         else if (((index - 2) % 4) == 0 && checkValue(chosenList.get(index))) { return true; }
         else if (((index + 1) % 4) == 0 && chosenList.get(index).equals(",")) { return true; }
-        else return index % 4 == 0
-                    && (checkPlainText(chosenList.get(index)));
+        else if (index % 4 == 0 && (checkPlainText(chosenList.get(index)))) { return true; }
+        else return false;
     }
 
     public boolean checkValue(String token) {
