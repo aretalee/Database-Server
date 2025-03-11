@@ -380,9 +380,15 @@ public class QueryParser {
     }
 
     public boolean checkValueLists(List<String> chosenList, int index) {
-        if (index % 2 == 0 && checkValue(chosenList.get(index))) { return true; }
+        if (index % 2 == 0 && checkValue(chosenList.get(index))) {
+            // double check that +number is now saved as number (positive anyways)
+            if (chosenList.get(index).charAt(0) != '\'' && chosenList.get(index).charAt(0) == '+') {
+                chosenList.set(index, chosenList.get(index).replace("+", ""));
+            }
+
+            return true; }
         else if (index % 2 != 0 && chosenList.get(index).equals(",")) { return true; }
-        else return false;
+        return false;
     }
 
     public boolean checkAttributeLists(List<String> chosenList, int index, String listType) {
@@ -410,22 +416,28 @@ public class QueryParser {
         boolean isString = true;
         boolean isNumber = true;
 
-        // integer & float literals
-        for (int i = 0; i < token.length(); i++) {
-            if (i == 0 && !Character.isDigit(token.charAt(i))
-                    && token.charAt(i) != '+' && token.charAt(i) != '-') {
-                isNumber =  false;
-            } else if (((i == token.length() - 1) || (i == 1 && (token.charAt(0) == '+' || token.charAt(0) == '-')) )
-                    && !Character.isDigit(token.charAt(i))) {
-                isNumber =  false;
-            } else if (i != 0 && !Character.isDigit(token.charAt(i)) && token.charAt(i) != '.') {
-                isNumber =  false;
-            }
+        if (token.charAt(0) == '"' || token.charAt(token.length() - 1) == '"') {
+            return false;
         }
+
+        // check for string literal first?
         // string literal
-        if (!isNumber) {
-            if (token.charAt(0) != '\'' || token.charAt(token.length() - 1) != '\'') {
-                isString = false;
+        if (token.charAt(0) != '\'' || token.charAt(token.length() - 1) != '\'') {
+            isString = false;
+        }
+
+        // integer & float literals
+        if (!isString) {
+            for (int i = 0; i < token.length(); i++) {
+                if (i == 0 && !Character.isDigit(token.charAt(i))
+                        && token.charAt(i) != '+' && token.charAt(i) != '-') {
+                    isNumber = false;
+                } else if (((i == token.length() - 1) || (i == 1 && (token.charAt(0) == '+' || token.charAt(0) == '-')))
+                        && !Character.isDigit(token.charAt(i))) {
+                    isNumber = false;
+                } else if (i != 0 && !Character.isDigit(token.charAt(i)) && token.charAt(i) != '.') {
+                    isNumber = false;
+                }
             }
         }
         // boolean literal & "NULL"
