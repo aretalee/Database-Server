@@ -22,11 +22,11 @@ public class Create {
         return true;
     }
 
-    public boolean createTable(String filePath, String fileName, List<String> attributeList, QueryHandler queryHandler) {
+    public boolean createTable(String filePath, String fileName, List<String> attriList, QueryHandler queryHandler) {
 
         newFile = new File(filePath + File.separator + fileName.toLowerCase() + ".tab");
         try {
-            if (checkHeadersForDupes(attributeList, queryHandler)) {
+            if (checkHeadersForDupes(attriList, queryHandler)) {
                 return false;
             } else if (!newFile.createNewFile()) {
                 queryHandler.setErrorLine("The given table already exists.");
@@ -36,7 +36,7 @@ public class Create {
             queryHandler.setErrorLine("Please try again.");
             return false;
         }
-        Table newTable = new Table(newFile, attributeList, queryHandler.getCurrentDatabase());
+        Table newTable = new Table(newFile, attriList, queryHandler.getCurrentDatabase());
         queryHandler.addTable(newTable);
 
         if (!newTable.saveToFile(newFile)) {

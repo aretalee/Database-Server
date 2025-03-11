@@ -5,18 +5,19 @@ import java.util.List;
 
 public class Join {
 
-    public boolean joinTables(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo, QueryHandler queryHandler) {
+    public boolean joinTables(Table tableOne, Table tableTwo, String attriOne, String attriTwo, QueryHandler queryHandler) {
 
-        if (areThereJoinErrors(tableOne, tableTwo, attributeOne, attributeTwo, queryHandler)) {
+        if (areThereJoinErrors(tableOne, tableTwo, attriOne, attriTwo, queryHandler)) {
             return false;
         }
 
-        List<String> headerList = createHeaderList(tableOne, tableTwo, attributeOne, attributeTwo);
+        List<String> headerList = createHeaderList(tableOne, tableTwo, attriOne, attriTwo);
         Table jointTable = new Table(null, headerList, "none");
-        int headerIndexOne = tableOne.getHeaderIndex(attributeOne);
-        int headerIndexTwo = tableTwo.getHeaderIndex(attributeTwo);
+        int headerIndexOne = tableOne.getHeaderIndex(attriOne);
+        int headerIndexTwo = tableTwo.getHeaderIndex(attriTwo);
 
         Insert insert = new Insert();
+
         for (List<String> rowOne : tableOne.accessTable()) {
             for (List<String> rowTwo : tableTwo.accessTable()) {
                 List<String> thisRow = new ArrayList<String>();
@@ -28,35 +29,34 @@ public class Join {
             }
         }
         outputJointTable(jointTable, queryHandler);
-
         return true;
     }
 
-    public boolean areThereJoinErrors(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo, QueryHandler queryHandler) {
+    public boolean areThereJoinErrors(Table tableOne, Table tableTwo, String attriOne, String attriTwo, QueryHandler queryHandler) {
         if (tableOne == null || tableTwo == null) {
             queryHandler.setErrorLine("One or more requested tables do not exist.");
             return true;
         } else if (tableOne.getTableName().equals(tableTwo.getTableName())) {
             queryHandler.setErrorLine("Cannot join the same table.");
             return true;
-        } else if (!tableOne.hasRequestedHeader(attributeOne)
-                || !tableTwo.hasRequestedHeader(attributeTwo)) {
+        } else if (!tableOne.hasRequestedHeader(attriOne)
+                || !tableTwo.hasRequestedHeader(attriTwo)) {
             queryHandler.setErrorLine("One or more attributes do not belong to the corresponding tables.");
             return true;
         }
         return false;
     }
 
-    public List<String> createHeaderList(Table tableOne, Table tableTwo, String attributeOne, String attributeTwo) {
+    public List<String> createHeaderList(Table tableOne, Table tableTwo, String attriOne, String attriTwo) {
         List<String> tempList = new ArrayList<>();
         tempList.add("id");
         for (String header : tableOne.accessColumnHeaders()) {
-            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attributeOne)) {
+            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attriOne)) {
                 tempList.add(tableOne.getTableName().replace(".tab", "") + "." + header);
             }
         }
         for (String header : tableTwo.accessColumnHeaders()) {
-            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attributeTwo)) {
+            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attriTwo)) {
                 tempList.add(tableTwo.getTableName().replace(".tab", "") + "." + header);
             }
         }
@@ -64,13 +64,11 @@ public class Join {
     }
 
     public List<String> addNewValues(List<String> chosenRow, List<String> newRow, int headerIndex) {
-
         for (String item : chosenRow) {
             if (chosenRow.indexOf(item) != 0 && chosenRow.indexOf(item) != headerIndex) {
                 newRow.add(item);
             }
         }
-
         return newRow;
     }
 

@@ -36,7 +36,7 @@ public class Select {
                     queryHandler.setErrorLine("Requested column does not exist.");
                     return false;
                 }
-                headerIndexes.add(ColumnIndexFinder.findColumnIndex(chosenTable, header));
+                headerIndexes.add(queryHandler.findColumnIndex(chosenTable, header));
             }
 
             for (List<String> row : chosenTable.accessTable()) {

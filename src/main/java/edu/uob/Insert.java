@@ -10,7 +10,6 @@ public class Insert {
         if (areThereInsertErrors(queryHandler, chosenTable, valueParameters)) {
             return false;
         }
-
         int rowID = chosenTable.getNextID();
         valueParameters.add(0, String.valueOf(rowID));
         chosenTable.addToTableList(valueParameters);
@@ -36,7 +35,6 @@ public class Insert {
                     + " values but you have inputted " + valueParameters.size() + " .");
             return true;
         }
-
         return false;
     }
 

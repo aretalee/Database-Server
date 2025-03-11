@@ -19,11 +19,7 @@ public class Delete {
         if (!getRowObjects(chosenTable, rowObjects, rowsToDelete, queryHandler)) {
             return false;
         }
-
-        for (List<String> row : rowObjects) {
-            chosenTable.removeFromTableList(row);
-            // does there need to be error handling here?
-        }
+        removeActualRows(chosenTable, rowObjects);
 
         if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
             queryHandler.setErrorLine("Could not delete record, please try again.");
@@ -46,6 +42,11 @@ public class Delete {
         return true;
     }
 
+    public void removeActualRows(Table chosenTable, List<List<String>> rowObjects) {
+        for (List<String> row : rowObjects) {
+            chosenTable.removeFromTableList(row);
+        }
+    }
 
 
 }

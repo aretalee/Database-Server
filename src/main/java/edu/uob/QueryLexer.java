@@ -9,7 +9,6 @@ public class QueryLexer{
 
     String query;
     String[] specialCharacters = {"(", ")", ",", ";", "=", "!", ">", "<"};
-//    String[] terms = {"use", "database", "table", "into", "from", "update", "join", "and", "on", "add", "drop"};
     ArrayList<String> tokens = new ArrayList<String>();
 
     public QueryLexer(String line) {
@@ -56,8 +55,6 @@ public class QueryLexer{
         // so we can be SURE that they are separated by AT LEAST one space (possibly more)
         for(int i = 0; i < specialCharacters.length; i++) {
             input = input.replace(specialCharacters[i], " " + specialCharacters[i] + " ");
-//            String regexString = "\\b" + "\\\\" + specialCharacters[i] + "\\b";
-//            input = input.replaceAll(regexString, " " + specialCharacters[i] + " ");
 
         }
         // Remove any double spaces (the previous padding activity might have introduced some of these)

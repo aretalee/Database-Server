@@ -9,10 +9,7 @@ public class FileHandler {
 
     public boolean readFile(File file, Table currentTable) {
 
-        try {
-            FileReader fileReader = new FileReader(file);
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
             String currentLine;
             int lineCounter = 1;
 
@@ -31,7 +28,6 @@ public class FileHandler {
                 }
                 lineCounter++;
             }
-            bufferedReader.close();
         } catch (NullPointerException | IOException e) {
             return false;
         }
@@ -40,9 +36,7 @@ public class FileHandler {
 
     public boolean writeTableToFile(File chosenFile, Table currentTable) {
 
-        try {
-            FileWriter fileWriter = new FileWriter(chosenFile);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(chosenFile));) {
 
             String latestID = String.valueOf(currentTable.getCurrentID());
             bufferedWriter.write(latestID);
@@ -60,9 +54,6 @@ public class FileHandler {
                 bufferedWriter.write(String.join("\t", row));
                 bufferedWriter.newLine();
             }
-
-            bufferedWriter.close();
-
         } catch (NullPointerException | IOException e) {
             return false;
         }

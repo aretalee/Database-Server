@@ -13,7 +13,6 @@ public class Alter {
                 return false;
             }
         }
-
         if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
             queryHandler.setErrorLine("Could not alter table, please try again.");
             return false;
@@ -33,11 +32,12 @@ public class Alter {
         }
         table.addToColumnHeaders(header);
         table.addColumnToRows();
+        // any extra error handling needed here?
         return true;
     }
 
     public boolean removeColumnHeader(Table table, String header, QueryHandler queryHandler) {
-        int chosenIndex = ColumnIndexFinder.findColumnIndex(table, header);
+        int chosenIndex = queryHandler.findColumnIndex(table, header);
 
         if (chosenIndex == -1) {
             queryHandler.setErrorLine("Column does not exist.");
@@ -48,6 +48,7 @@ public class Alter {
         }
         table.removeFromColumnHeaders(chosenIndex);
         table.removeColumnFromRow(chosenIndex);
+        // any extra error handling needed here?
         return true;
     }
 }

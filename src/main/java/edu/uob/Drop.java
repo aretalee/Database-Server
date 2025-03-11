@@ -31,7 +31,6 @@ public class Drop {
     }
 
     public File clearDirectory(File directory, File[] fileList,  QueryHandler queryHandler) {
-
         for (File f : fileList) {
             dropFile(f.getAbsolutePath(), queryHandler);
         }

@@ -10,15 +10,14 @@ public class ConditionHandler {
         if (conditions.isEmpty()) {
             return null;
         }
-
         List<List<Integer>> resultList = new ArrayList<List<Integer>>();
-        // change AND to 11, OR to 10
 
         int index = 0;
         while (index < conditions.size()) {
             String currentToken = conditions.get(index);
             if (currentToken.equalsIgnoreCase("and") || currentToken.equalsIgnoreCase("or")) {
                 List<Integer> thisOp = new ArrayList<Integer>();
+                // change AND to 11, OR to 10
                 thisOp.add(currentToken.equalsIgnoreCase("and") ? 11 : 10);
                 resultList.add(thisOp);
                 index += 1;
@@ -26,7 +25,7 @@ public class ConditionHandler {
                 String attribute = conditions.get(index).toLowerCase();
                 String comparator = conditions.get(index + 1);
                 String value = conditions.get(index + 2);
-                List<Integer> validRows = evaluateCondition(chosenTable, attribute, comparator, value);
+                List<Integer> validRows = evaluateCondition(chosenTable, attribute, comparator, value, queryHandler);
                 if (!validRows.isEmpty() && validRows.get(0) == -1) {
                     queryHandler.setErrorLine("Requested column in conditions does not exist.");
                     return validRows;
@@ -35,21 +34,20 @@ public class ConditionHandler {
                 index += 3;
             }
         }
-
         return combineResults(resultList);
     }
 
     public List<Integer> combineResults(List<List<Integer>> allResults) {
-
         if (allResults.size() == 1) {
             return allResults.get(0);
         }
-
         List<Integer> tempList;
         int index = 0;
         while (allResults.size() > 1) {
-            if (!allResults.get(index).isEmpty() && (allResults.get(index).get(0) == 11 || allResults.get(index).get(0) == 10)) {
-                tempList = editResultLists(allResults.get(index - 1), allResults.get(index - 2), allResults.get(index).get(0));
+            if (!allResults.get(index).isEmpty() && (allResults.get(index).get(0) == 11
+                    || allResults.get(index).get(0) == 10)) {
+                tempList = editResultLists(allResults.get(index - 1),
+                        allResults.get(index - 2), allResults.get(index).get(0));
                 allResults.set(index, tempList);
                 allResults.remove(index - 1);
                 allResults.remove(index - 2);
@@ -72,14 +70,14 @@ public class ConditionHandler {
         return listOne;
     }
 
-    public List<Integer> evaluateCondition(Table chosenTable, String attribute, String comparator, String value) {
+    public List<Integer> evaluateCondition(Table chosenTable, String attribute, String comparator, String value, QueryHandler queryHandler) {
         List<Integer> currentList = new ArrayList<Integer>();
 
         if (!chosenTable.hasRequestedHeader(attribute)) {
             currentList.add(-1);
             return currentList;
         }
-        int headerIndex = ColumnIndexFinder.findColumnIndex(chosenTable, attribute);
+        int headerIndex = queryHandler.findColumnIndex(chosenTable, attribute);
         for (List<String> row : chosenTable.accessTable()) {
             if (compareValue(row, headerIndex, comparator, value.replaceAll("'", ""))) {
                 currentList.add(chosenTable.getTableIndex(row));
@@ -89,10 +87,7 @@ public class ConditionHandler {
     }
 
     public boolean compareValue(List<String> currentRow, int index, String comparator, String value) {
-
-        boolean valueMatches = false;
-        int compOne;
-        int compTwo;
+        boolean valueMatches;
 
         if (comparator.equalsIgnoreCase("like")) {
             return currentRow.get(index).contains(value);
@@ -104,20 +99,28 @@ public class ConditionHandler {
         } else if (comparator.equals("!=")) {
             return !currentRow.get(index).equals(value);
         } else {
-            try {
-                compOne = Integer.parseInt(currentRow.get(index));
-                compTwo = Integer.parseInt(value);
-
-            } catch (NumberFormatException e) {
-                return false;
-            }
+            valueMatches = compareInts(currentRow, index, comparator, value);
         }
-        if (comparator.equals(">")) { valueMatches = (compOne > compTwo); }
-        if (comparator.equals("<")) { valueMatches = (compOne < compTwo); }
-        if (comparator.equals(">=")) { valueMatches = (compOne >= compTwo); }
-        if (comparator.equals("<=")) { valueMatches = (compOne <= compTwo); }
-
         return valueMatches;
+    }
+
+    public boolean compareInts(List<String> currentRow, int index, String comparator, String value) {
+        boolean match = false;
+        int compOne;
+        int compTwo;
+        try {
+            compOne = Integer.parseInt(currentRow.get(index));
+            compTwo = Integer.parseInt(value);
+
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        if (comparator.equals(">")) { match = (compOne > compTwo); }
+        if (comparator.equals("<")) { match = (compOne < compTwo); }
+        if (comparator.equals(">=")) { match = (compOne >= compTwo); }
+        if (comparator.equals("<=")) { match = (compOne <= compTwo); }
+
+        return match;
     }
 
 }

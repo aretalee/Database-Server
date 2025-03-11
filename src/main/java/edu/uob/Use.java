@@ -15,31 +15,34 @@ public class Use {
             queryHandler.setErrorLine("No databases found.");
             return false;
         }
-
-        for (File file : allDatabases) {
-            if (file != null && file.getName().equals(databaseName)) {
-                requestedDatabase = file;
-            }
-        }
+        requestedDatabase = doesDatabaseFileExist(allDatabases, databaseName);
 
         if (requestedDatabase == null) {
             queryHandler.setErrorLine("Requested database does not exist.");
             return false;
         }
-
-        Database newDatabase = doesDatabaseExist(databaseName, queryHandler);
+        Database newDatabase = doesDatabaseObjectExist(databaseName, queryHandler);
 
         if (newDatabase == null) {
             newDatabase = new Database(requestedDatabase);
             queryHandler.addDatabase(newDatabase);
         }
-
         queryHandler.setCalledUseCommand(true);
         return true;
     }
 
-    public Database doesDatabaseExist(String databaseName, QueryHandler queryHandler) {
+    public File doesDatabaseFileExist(File[] allDatabases, String databaseName) {
+        File foundDatabase = null;
 
+        for (File file : allDatabases) {
+            if (file != null && file.getName().equals(databaseName)) {
+                foundDatabase = file;
+            }
+        }
+        return foundDatabase;
+    }
+
+    public Database doesDatabaseObjectExist(String databaseName, QueryHandler queryHandler) {
         List<Database> databases = queryHandler.getAllDatabases();
         for (Database database : databases) {
             if(database.getDatabaseName().equals(databaseName)) {
@@ -48,6 +51,4 @@ public class Use {
         }
         return null;
     }
-
-
 }
