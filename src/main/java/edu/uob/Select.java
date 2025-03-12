@@ -21,7 +21,10 @@ public class Select {
             printAllRows = true;
         } else if (!rowsToSelect.isEmpty() && rowsToSelect.get(0) == -1) { return false; }
 
-        if (chosenHeaders.get(0).equals("*")) {
+        if (chosenHeaders.isEmpty()) {
+            queryHandler.setErrorLine("Missing header from query.");
+            return false;
+        } else if (chosenHeaders.get(0).equals("*")) {
             List<String> allColumns = formatOutputTable(chosenTable.accessTable(),
                     chosenTable.accessColumnHeaders(), rowsToSelect);
             queryHandler.setTableForPrinting(allColumns);

@@ -31,9 +31,10 @@ public class QueryHandler {
 
         if (command.isEmpty()) {
             return "[ERROR]: No command specified.";
-        } else if (!tokens.get(0).equalsIgnoreCase("use") && !tokens.get(0).equalsIgnoreCase("create")
-                && !tokens.get(0).equalsIgnoreCase("drop")
-                && !tokens.get(0).equalsIgnoreCase("database") && !calledUseCommand) {
+        } else if (!tokens.get(0).equalsIgnoreCase("use")
+                && ((tokens.get(0).equalsIgnoreCase("create")
+                || tokens.get(0).equalsIgnoreCase("drop"))
+                && !tokens.get(1).equalsIgnoreCase("database")) && !calledUseCommand) {
             return "[ERROR]: Please call USE before attempting table-specific commands.";
         }
 

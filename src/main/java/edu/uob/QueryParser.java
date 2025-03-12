@@ -148,14 +148,18 @@ public class QueryParser {
         List<String> wildAttributeList = new ArrayList<String>();
         int index = 1;
 
+        if (!isThereKeyword(query, "from")) {
+            queryHandler.setErrorLine("Invalid query parameters.");
+            return false;
+        }
+
         if (query.get(1).equals("*")) {
             wildAttributeList.add(query.get(1));
         } else {
             wildAttributeList = addToList(wildAttributeList, query, index, "from");
         }
         index = wildAttributeList.size() + index;
-        if (!query.get(index).equalsIgnoreCase("from")
-                || !checkPlainText(query.get(index + 1))
+        if (!checkPlainText(query.get(index + 1))
                 || (!isListValid(wildAttributeList, "WildAttributeList") && !query.get(1).equals("*"))) {
             queryHandler.setErrorLine("Invalid query parameters.");
             return false;
@@ -183,8 +187,8 @@ public class QueryParser {
     }
 
     public boolean parseUpdate(QueryHandler queryHandler, List<String> query) {
-        if (!checkPlainText(query.get(1))
-                || !query.get(2).equalsIgnoreCase(("set"))) {
+        if (!checkPlainText(query.get(1)) || !query.get(2).equalsIgnoreCase(("set"))
+                || !isThereKeyword(query, "where")) {
             queryHandler.setErrorLine("Invalid query parameters.");
             return false;
         }
@@ -195,8 +199,7 @@ public class QueryParser {
         nameValueList = addToList(nameValueList, query, index, "where");
 
         index = nameValueList.size() + index;
-        if (!query.get(index).equalsIgnoreCase("where")
-                || !isListValid(nameValueList, "NameValueList")) {
+        if (!isListValid(nameValueList, "NameValueList")) {
             queryHandler.setErrorLine("Invalid query parameters.");
             return false;
         }
@@ -287,6 +290,13 @@ public class QueryParser {
         trimmedQuery.removeAll(Collections.singleton(")"));
         trimmedQuery.removeAll(Collections.singleton(";"));
 
+        if (trimmedQuery.isEmpty()) {
+            queryHandler.setErrorLine("No condition provided.");
+            return false;
+        } else if ((trimmedQuery.size() + 1) % 4 != 0) {
+            queryHandler.setErrorLine("Wrong number of parameters in condition.");
+            return false;
+        }
         for (int i = 0; i < trimmedQuery.size(); i++) {
             String currentToken = trimmedQuery.get(i);
             if (!currentToken.equals(";") && !currentToken.equals(" ")) {
@@ -461,6 +471,15 @@ public class QueryParser {
     public boolean isThereReservedWord(String token) {
         for (String word : this.reservedWords) {
             if (word.equalsIgnoreCase(token)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isThereKeyword(List<String> query, String keyword) {
+        for (String s : query) {
+            if (s.equalsIgnoreCase(keyword)) {
                 return true;
             }
         }
