@@ -26,16 +26,16 @@ public class Update {
         return true;
     }
 
-    public boolean checkValueListHeaders(Table table, List<String> nameValueList, QueryHandler queryHandler) {
+    public boolean checkValueListHeaders(Table table, List<String> nameValueList, QueryHandler handler) {
         int attributeIndex = 0;
         String headerName = nameValueList.get(attributeIndex).toLowerCase();
 
         while (attributeIndex < nameValueList.size()) {
             if (headerName.equalsIgnoreCase("id")) {
-                queryHandler.setErrorLine("Cannot update id column.");
+                handler.setErrorLine("Cannot update id column.");
                 return false;
             } else if (!table.hasRequestedHeader(headerName)) {
-                queryHandler.setErrorLine("Requested column(s) in SET does not exist.");
+                handler.setErrorLine("Requested column(s) in SET does not exist.");
                 return false;
             }
             attributeIndex += 2;

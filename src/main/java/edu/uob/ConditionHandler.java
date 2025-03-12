@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ConditionHandler {
 
-    public List<Integer> filterTable(Table chosenTable, List<String> conditions, QueryHandler queryHandler) {
+    public List<Integer> filterTable(Table chosenTable, List<String> conditions, QueryHandler handler) {
         if (conditions.isEmpty()) {
             return null;
         }
@@ -19,11 +19,11 @@ public class ConditionHandler {
                 current.add(currentToken.equalsIgnoreCase("and") ? 11 : 10);
                 index += 1;
             } else {
-                current = getValues(chosenTable,conditions, index, queryHandler);
+                current = getValues(chosenTable,conditions, index, handler);
                 index += 3;
             }
             if (!current.isEmpty() && current.get(0) == -1) {
-                queryHandler.setErrorLine("Requested column in conditions does not exist.");
+                handler.setErrorLine("Requested column in conditions does not exist.");
                 return current;
             } else { resultList.add(current); }
         }

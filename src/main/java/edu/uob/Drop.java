@@ -4,37 +4,37 @@ import java.io.*;
 
 public class Drop {
 
-    public boolean dropFile(String filePath, QueryHandler queryHandler) {
+    public boolean dropFile(String filePath, QueryHandler handler) {
 
         File file = new File(filePath);
         if (!file.exists()) {
-            queryHandler.setErrorLine("The database/table does not exist");
+            handler.setErrorLine("The database/table does not exist");
             return false;
         }
-        removeObject(file, queryHandler);
-        quickDrop(file, queryHandler);
+        removeObject(file, handler);
+        quickDrop(file, handler);
         return true;
     }
 
-    public void removeObject(File file, QueryHandler queryHandler) {
+    public void removeObject(File file, QueryHandler handler) {
         if (file.isDirectory()) {
             File[] fileList = file.listFiles();
             if (fileList != null) {
-                file = clearDirectory(file, fileList, queryHandler);
-                queryHandler.removeDatabase(file.getName());
+                file = clearDirectory(file, fileList, handler);
+                handler.removeDatabase(file.getName());
             }
-        } else { queryHandler.removeTable(file.getName(), queryHandler.getCurrentDatabase()); }
+        } else { handler.removeTable(file.getName(), handler.getCurrentDatabase()); }
     }
 
-    public void quickDrop(File uneededFile, QueryHandler queryHandler) {
+    public void quickDrop(File uneededFile, QueryHandler handler) {
         if (!uneededFile.delete()) {
-            queryHandler.setErrorLine("Could not delete file " + uneededFile.getName());
+            handler.setErrorLine("Could not delete file " + uneededFile.getName());
         }
     }
 
-    public File clearDirectory(File directory, File[] fileList,  QueryHandler queryHandler) {
+    public File clearDirectory(File directory, File[] fileList,  QueryHandler handler) {
         for (File f : fileList) {
-            dropFile(f.getAbsolutePath(), queryHandler);
+            dropFile(f.getAbsolutePath(), handler);
         }
         return directory;
     }

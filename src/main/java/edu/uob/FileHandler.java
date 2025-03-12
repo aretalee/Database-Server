@@ -64,14 +64,14 @@ public class FileHandler {
         return true;
     }
 
-    public boolean populateWithExistingFiles(QueryHandler queryHandler) {
-        File[] storageFolder = (new File(queryHandler.getCurrentServer().getStorageFolderPath())).listFiles();
+    public boolean populateWithExistingFiles(QueryHandler handler) {
+        File[] storageFolder = (new File(handler.getCurrentServer().getStorageFolderPath())).listFiles();
 
         if (storageFolder != null && storageFolder.length > 0) {
             for (File databaseFile : storageFolder) {
                 Database thisDatabase = new Database(databaseFile);
-                queryHandler.addDatabase(thisDatabase);
-                if (!addTableObjects(queryHandler, thisDatabase.getDatabaseName())) {
+                handler.addDatabase(thisDatabase);
+                if (!addTableObjects(handler, thisDatabase.getDatabaseName())) {
                     return false;
                 }
             }
@@ -79,13 +79,13 @@ public class FileHandler {
         return true;
     }
 
-    public boolean addTableObjects(QueryHandler queryHandler, String databaseName) {
-        String databasePath = queryHandler.getCurrentServer().getStorageFolderPath() + File.separator + databaseName;
+    public boolean addTableObjects(QueryHandler handler, String databaseName) {
+        String databasePath = handler.getCurrentServer().getStorageFolderPath() + File.separator + databaseName;
         File[] databaseFolder = (new File(databasePath)).listFiles();
 
         if (databaseFolder != null) {
             for (File tableFile : databaseFolder) {
-                if (!addEachTable(tableFile, databaseName, queryHandler)) {
+                if (!addEachTable(tableFile, databaseName, handler)) {
                     return false;
                 }
             }
@@ -93,14 +93,14 @@ public class FileHandler {
         return true;
     }
 
-    public boolean addEachTable(File tableFile, String databaseName, QueryHandler queryHandler) {
+    public boolean addEachTable(File tableFile, String databaseName, QueryHandler handler) {
         List<String> attributeList = new ArrayList<String>();
         Table thisTable = new Table(tableFile, attributeList, databaseName);
         if (!thisTable.getTableName().equals(".DS_Store")) {
             if (!thisTable.loadTableData()) {
                 return false;
             }
-            queryHandler.addTable(thisTable);
+            handler.addTable(thisTable);
         }
         return true;
     }

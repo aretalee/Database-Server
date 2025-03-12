@@ -5,27 +5,27 @@ import java.util.List;
 
 public class Use {
 
-    public boolean switchDatabases(String databasesPath, String databaseName, QueryHandler queryHandler) {
+    public boolean switchDatabases(String databasesPath, String databaseName, QueryHandler handler) {
 
         File databases = new File(databasesPath);
         File[] allDatabases = databases.listFiles();
         File requestedDatabase;
 
         if(allDatabases == null || allDatabases.length == 0) {
-            queryHandler.setErrorLine("No databases found.");
+            handler.setErrorLine("No databases found.");
             return false;
         }
         requestedDatabase = doesDatabaseFileExist(allDatabases, databaseName);
         if (requestedDatabase == null) {
-            queryHandler.setErrorLine("Requested database does not exist.");
+            handler.setErrorLine("Requested database does not exist.");
             return false;
         }
-        Database newDatabase = doesDatabaseObjectExist(databaseName, queryHandler);
+        Database newDatabase = doesDatabaseObjectExist(databaseName, handler);
         if (newDatabase == null) {
             newDatabase = new Database(requestedDatabase);
-            queryHandler.addDatabase(newDatabase);
+            handler.addDatabase(newDatabase);
         }
-        queryHandler.setCalledUseCommand(true);
+        handler.setCalledUseCommand(true);
         return true;
     }
 
@@ -40,8 +40,8 @@ public class Use {
         return foundDatabase;
     }
 
-    public Database doesDatabaseObjectExist(String databaseName, QueryHandler queryHandler) {
-        List<Database> databases = queryHandler.getAllDatabases();
+    public Database doesDatabaseObjectExist(String databaseName, QueryHandler handler) {
+        List<Database> databases = handler.getAllDatabases();
         for (Database database : databases) {
             if(database.getDatabaseName().equals(databaseName)) {
                 return database;

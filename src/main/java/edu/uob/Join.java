@@ -71,12 +71,12 @@ public class Join {
         return newRow;
     }
 
-    public void outputJointTable(Table jointTable, QueryHandler queryHandler) {
+    public void outputJointTable(Table jointTable, QueryHandler handler) {
         Select select = new Select();
         List<String> printAll = new ArrayList<String>();
         printAll.add("*");
         List<String> conditions = new ArrayList<String>();
-        select.selectRecords(jointTable, printAll, conditions, queryHandler);
+        select.selectRecords(jointTable, printAll, conditions, handler);
     }
 
 

@@ -54,8 +54,13 @@ public class QueryHandler {
             }
         } else {
             returnStatement = new StringBuilder(("[ERROR]: " + errorLine));
+            errorLine = null;
         }
         return returnStatement.toString();
+    }
+
+    public String getErrorLine() {
+        return errorLine;
     }
 
     public DBServer getCurrentServer() {
