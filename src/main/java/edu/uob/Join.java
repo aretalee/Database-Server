@@ -5,43 +5,40 @@ import java.util.List;
 
 public class Join {
 
-    public boolean joinTables(Table tableOne, Table tableTwo, String attriOne, String attriTwo, QueryHandler queryHandler) {
+    public boolean joinTables(Table tableOne, Table tableTwo, String attriOne, String attriTwo, QueryHandler handler) {
 
-        if (areThereJoinErrors(tableOne, tableTwo, attriOne, attriTwo, queryHandler)) {
+        if (checkJoinErrors(tableOne, tableTwo, attriOne, attriTwo, handler)) {
             return false;
         }
-
         List<String> headerList = createHeaderList(tableOne, tableTwo, attriOne, attriTwo);
         Table jointTable = new Table(null, headerList, "none");
         int headerIndexOne = tableOne.getHeaderIndex(attriOne);
         int headerIndexTwo = tableTwo.getHeaderIndex(attriTwo);
 
         Insert insert = new Insert();
-
         for (List<String> rowOne : tableOne.accessTable()) {
             for (List<String> rowTwo : tableTwo.accessTable()) {
                 List<String> thisRow = new ArrayList<String>();
                 if (rowTwo.get(headerIndexTwo).equals(rowOne.get(headerIndexOne))) {
                     thisRow = addNewValues(rowOne, thisRow, headerIndexOne);
                     thisRow = addNewValues(rowTwo, thisRow, headerIndexTwo);
-                    insert.insertIntoTable(queryHandler, jointTable, thisRow);
+                    insert.insertIntoTable(handler, jointTable, thisRow);
                 }
             }
         }
-        outputJointTable(jointTable, queryHandler);
+        outputJointTable(jointTable, handler);
         return true;
     }
 
-    public boolean areThereJoinErrors(Table tableOne, Table tableTwo, String attriOne, String attriTwo, QueryHandler queryHandler) {
+    public boolean checkJoinErrors(Table tableOne, Table tableTwo, String attriOne, String attriTwo, QueryHandler handler) {
         if (tableOne == null || tableTwo == null) {
-            queryHandler.setErrorLine("One or more requested tables do not exist.");
+            handler.setErrorLine("One or more requested tables do not exist.");
             return true;
         } else if (tableOne.getTableName().equals(tableTwo.getTableName())) {
-            queryHandler.setErrorLine("Cannot join the same table.");
+            handler.setErrorLine("Cannot join the same table.");
             return true;
-        } else if (!tableOne.hasRequestedHeader(attriOne)
-                || !tableTwo.hasRequestedHeader(attriTwo)) {
-            queryHandler.setErrorLine("One or more attributes do not belong to the corresponding tables.");
+        } else if (!tableOne.hasRequestedHeader(attriOne) || !tableTwo.hasRequestedHeader(attriTwo)) {
+            handler.setErrorLine("One or more attributes do not belong to the corresponding tables.");
             return true;
         }
         return false;
@@ -50,14 +47,16 @@ public class Join {
     public List<String> createHeaderList(Table tableOne, Table tableTwo, String attriOne, String attriTwo) {
         List<String> tempList = new ArrayList<>();
         tempList.add("id");
-        for (String header : tableOne.accessColumnHeaders()) {
-            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attriOne)) {
-                tempList.add(tableOne.getTableName().replace(".tab", "") + "." + header);
-            }
-        }
-        for (String header : tableTwo.accessColumnHeaders()) {
-            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attriTwo)) {
-                tempList.add(tableTwo.getTableName().replace(".tab", "") + "." + header);
+
+        tempList = addEachTableHeader(tempList, tableOne, attriOne);
+        tempList = addEachTableHeader(tempList, tableTwo, attriTwo);
+        return tempList;
+    }
+
+    public List<String> addEachTableHeader(List<String> tempList, Table table, String attribute) {
+        for (String header : table.accessColumnHeaders()) {
+            if (!header.equalsIgnoreCase("id") && !header.equalsIgnoreCase(attribute)) {
+                tempList.add(table.getTableName().replace(".tab", "") + "." + header);
             }
         }
         return tempList;

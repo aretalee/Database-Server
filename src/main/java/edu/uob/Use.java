@@ -9,20 +9,18 @@ public class Use {
 
         File databases = new File(databasesPath);
         File[] allDatabases = databases.listFiles();
-        File requestedDatabase = null;
+        File requestedDatabase;
 
         if(allDatabases == null || allDatabases.length == 0) {
             queryHandler.setErrorLine("No databases found.");
             return false;
         }
         requestedDatabase = doesDatabaseFileExist(allDatabases, databaseName);
-
         if (requestedDatabase == null) {
             queryHandler.setErrorLine("Requested database does not exist.");
             return false;
         }
         Database newDatabase = doesDatabaseObjectExist(databaseName, queryHandler);
-
         if (newDatabase == null) {
             newDatabase = new Database(requestedDatabase);
             queryHandler.addDatabase(newDatabase);

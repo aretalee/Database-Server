@@ -7,42 +7,37 @@ public class Select {
 
     private boolean printAllRows = false;
 
-    public boolean selectRecords(Table chosenTable, List<String> chosenHeaders, List<String> conditionList, QueryHandler queryHandler) {
-
-        if (chosenTable == null) {
-            queryHandler.setErrorLine("Requested table does not exist.");
+    public boolean selectRecords(Table table, List<String> headers, List<String> conditions, QueryHandler handler) {
+        if (table == null) {
+            handler.setErrorLine("Requested table does not exist.");
             return false;
         }
-
         ConditionHandler conditionHandler = new ConditionHandler();
-        List<Integer> rowsToSelect = conditionHandler.filterTable(chosenTable, conditionList, queryHandler);
+        List<Integer> rowsToSelect = conditionHandler.filterTable(table, conditions, handler);
 
-        if (conditionList.isEmpty()) {
-            printAllRows = true;
-        } else if (!rowsToSelect.isEmpty() && rowsToSelect.get(0) == -1) { return false; }
+        if (conditions.isEmpty()) { printAllRows = true; }
+        else if (!rowsToSelect.isEmpty() && rowsToSelect.get(0) == -1) { return false; }
 
-        if (chosenHeaders.isEmpty()) {
-            queryHandler.setErrorLine("Missing header from query.");
+        if (headers.isEmpty()) {
+            handler.setErrorLine("Missing header from query.");
             return false;
-        } else if (chosenHeaders.get(0).equals("*")) {
-            List<String> allColumns = formatOutputTable(chosenTable.accessTable(),
-                    chosenTable.accessColumnHeaders(), rowsToSelect);
-            queryHandler.setTableForPrinting(allColumns);
-            queryHandler.setPrintBoolean(true);
-
+        } else if (headers.get(0).equals("*")) {
+            List<String> allColumns = formatOutputTable(table.accessTable(),
+                    table.accessColumnHeaders(), rowsToSelect);
+            handler.setTableForPrinting(allColumns);
+            handler.setPrintBoolean(true);
         } else {
             List<Integer> headerIndexes = new ArrayList<Integer>();
             List<List<String>> toBePrinted = new ArrayList<List<String>>();
 
-            for (String header : chosenHeaders) {
-                if (!chosenTable.hasRequestedHeader(header)) {
-                    queryHandler.setErrorLine("Requested column does not exist.");
+            for (String header : headers) {
+                if (!table.hasRequestedHeader(header)) {
+                    handler.setErrorLine("Requested column does not exist.");
                     return false;
                 }
-                headerIndexes.add(queryHandler.findColumnIndex(chosenTable, header));
+                headerIndexes.add(handler.findColumnIndex(table, header));
             }
-
-            for (List<String> row : chosenTable.accessTable()) {
+            for (List<String> row : table.accessTable()) {
                 List<String> rowValues = new ArrayList<String>();
 
                 for (int currentIndex : headerIndexes) {
@@ -52,15 +47,14 @@ public class Select {
                 }
                 toBePrinted.add(rowValues);
             }
-            List<String> selectedColumns = formatOutputTable(toBePrinted, chosenHeaders, rowsToSelect);
-            queryHandler.setTableForPrinting(selectedColumns);
-            queryHandler.setPrintBoolean(true);
+            List<String> selectedColumns = formatOutputTable(toBePrinted, headers, rowsToSelect);
+            handler.setTableForPrinting(selectedColumns);
+            handler.setPrintBoolean(true);
         }
         return true;
     }
 
     public List<String> formatOutputTable(List<List<String>> tableList, List<String> headers, List<Integer> chosenRows) {
-
         List<String> formattedRows = new ArrayList<String>();
         formattedRows.add("\n" + String.join("\t", headers) + "\n");
 

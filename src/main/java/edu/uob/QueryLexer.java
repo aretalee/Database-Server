@@ -15,18 +15,6 @@ public class QueryLexer{
         query = line;
     }
 
-    public static void main(String args[]) {
-
-        String newQuery = "update hello set age = 1, the = 'this' where ther > -1;";
-//        String newQuery = "SELECT * FROM STUDENTS WHERE AGE=10 AND MARK>70;";
-        QueryLexer lexer = new QueryLexer(newQuery);
-        lexer.setup();;
-        for (String token : lexer.tokens) {
-            System.out.println(token);
-        }
-
-    }
-
     public ArrayList<String> getTokens() {
         return tokens;
     }

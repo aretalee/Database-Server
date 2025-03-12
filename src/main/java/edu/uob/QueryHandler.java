@@ -6,6 +6,7 @@ import java.util.List;
 public class QueryHandler {
 
     private DBServer currentServer;
+    private boolean populatedWithExistingFiles;
 
     private boolean calledUseCommand = false;
     private List<Database> allDatabases = new ArrayList<Database>();
@@ -19,9 +20,7 @@ public class QueryHandler {
     public QueryHandler(DBServer server) {
         currentServer = server;
         FileHandler fileHandler = new FileHandler();
-        if (!fileHandler.populateWithExistingFiles(this)) {
-            System.out.println("Unable to access existing files.");
-        }
+        populatedWithExistingFiles = fileHandler.populateWithExistingFiles(this);
     }
 
     public String returnResponse(String command) {
@@ -31,13 +30,14 @@ public class QueryHandler {
 
         if (command.isEmpty()) {
             return "[ERROR]: No command specified.";
+        } else if (!populatedWithExistingFiles) {
+            return "[ERROR]: Unable to populate files.";
         } else if (!tokens.get(0).equalsIgnoreCase("use")
                 && ((tokens.get(0).equalsIgnoreCase("create")
                 || tokens.get(0).equalsIgnoreCase("drop"))
                 && !tokens.get(1).equalsIgnoreCase("database")) && !calledUseCommand) {
             return "[ERROR]: Please call USE before attempting table-specific commands.";
         }
-
         QueryParser parser = new QueryParser();
         return returnStatement(parser.parseQuery(tokens, this));
     }

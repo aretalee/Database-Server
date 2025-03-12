@@ -7,11 +7,16 @@ public class Drop {
     public boolean dropFile(String filePath, QueryHandler queryHandler) {
 
         File file = new File(filePath);
-
         if (!file.exists()) {
             queryHandler.setErrorLine("The database/table does not exist");
             return false;
         }
+        removeObject(file, queryHandler);
+        quickDrop(file, queryHandler);
+        return true;
+    }
+
+    public void removeObject(File file, QueryHandler queryHandler) {
         if (file.isDirectory()) {
             File[] fileList = file.listFiles();
             if (fileList != null) {
@@ -19,9 +24,6 @@ public class Drop {
                 queryHandler.removeDatabase(file.getName());
             }
         } else { queryHandler.removeTable(file.getName(), queryHandler.getCurrentDatabase()); }
-
-        quickDrop(file, queryHandler);
-        return true;
     }
 
     public void quickDrop(File uneededFile, QueryHandler queryHandler) {
@@ -36,5 +38,4 @@ public class Drop {
         }
         return directory;
     }
-
 }

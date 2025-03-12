@@ -1875,7 +1875,24 @@ public class ExampleDBTests {
         assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
     }
 
+    @Test
+    public void testInvalidQuery128() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (value, height);");
+        sendCommandToServer("INSERT INTO marks VALUES (0.1,1);");
+        String response = sendCommandToServer("SElECT *, FROM marks;");
+        // invalid attribute
+        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
+        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+    }
+
+    // should test for too few/many values in all query types as well
+
     // end of BNF testing
+
+
 
 
 

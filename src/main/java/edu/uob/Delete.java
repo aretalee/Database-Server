@@ -11,15 +11,10 @@ public class Delete {
             queryHandler.setErrorLine("Requested table does not exist.");
             return false;
         }
-
         ConditionHandler conditionHandler = new ConditionHandler();
         List<Integer> rowsToDelete = conditionHandler.filterTable(chosenTable, conditionList, queryHandler);
 
-        List<List<String>> rowObjects = new ArrayList<List<String>>();
-        if (!getRowObjects(chosenTable, rowObjects, rowsToDelete, queryHandler)) {
-            return false;
-        }
-        removeActualRows(chosenTable, rowObjects);
+        if (!findAndDelete(chosenTable, rowsToDelete, queryHandler)) { return false; }
 
         if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
             queryHandler.setErrorLine("Could not delete record, please try again.");
@@ -28,16 +23,25 @@ public class Delete {
         return true;
     }
 
-    public boolean getRowObjects(Table table, List<List<String>> rowObjects, List<Integer> rowsToDelete, QueryHandler queryHandler) {
+    public boolean findAndDelete(Table chosenTable, List<Integer> rowsToDelete, QueryHandler queryHandler) {
         if (!rowsToDelete.isEmpty()) {
-            for (Integer index : rowsToDelete) {
-                if (index == -1) {
-                    queryHandler.setErrorLine("Requested column(s) in condition does not exist.");
-                    return false;
-                }
-                List<String> row = table.getTableFromList(index);
-                rowObjects.add(row);
+            List<List<String>> rowObjects = new ArrayList<List<String>>();
+            if (!getRowObjects(chosenTable, rowObjects, rowsToDelete, queryHandler)) {
+                return false;
             }
+            removeActualRows(chosenTable, rowObjects);
+        }
+        return true;
+    }
+
+    public boolean getRowObjects(Table table, List<List<String>> rowObjects, List<Integer> rows, QueryHandler handler) {
+        for (Integer index : rows) {
+            if (index == -1) {
+                handler.setErrorLine("Requested column(s) in condition does not exist.");
+                return false;
+            }
+            List<String> row = table.getTableFromList(index);
+            rowObjects.add(row);
         }
         return true;
     }
@@ -47,6 +51,5 @@ public class Delete {
             chosenTable.removeFromTableList(row);
         }
     }
-
 
 }

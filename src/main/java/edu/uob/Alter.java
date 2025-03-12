@@ -17,7 +17,6 @@ public class Alter {
             queryHandler.setErrorLine("Could not alter table, please try again.");
             return false;
         }
-
         return true;
     }
 
@@ -32,7 +31,6 @@ public class Alter {
         }
         table.addToColumnHeaders(header);
         table.addColumnToRows();
-        // any extra error handling needed here?
         return true;
     }
 
@@ -48,7 +46,6 @@ public class Alter {
         }
         table.removeFromColumnHeaders(chosenIndex);
         table.removeColumnFromRow(chosenIndex);
-        // any extra error handling needed here?
         return true;
     }
 }

@@ -4,23 +4,23 @@ import java.util.List;
 
 public class Update {
 
-    public boolean updateTable(Table chosenTable, List<String> nameValueList, List<String> conditionList, QueryHandler queryHandler) {
+    public boolean updateTable(Table chosenTable, List<String> nValueList, List<String> conditions, QueryHandler handler) {
 
         if (chosenTable == null) {
-            queryHandler.setErrorLine("Requested table does not exist.");
+            handler.setErrorLine("Requested table does not exist.");
             return false;
         }
-
         ConditionHandler conditionHandler = new ConditionHandler();
-        List<Integer> rowsToUpdate = conditionHandler.filterTable(chosenTable, conditionList, queryHandler);
+        List<Integer> rowsToUpdate = conditionHandler.filterTable(chosenTable, conditions, handler);
 
-        if (!checkValueListHeaders(chosenTable, nameValueList, queryHandler)
-                || !editValues(chosenTable, nameValueList, rowsToUpdate, queryHandler)) {
-            return false;
+        if (!rowsToUpdate.isEmpty()) {
+            if (!checkValueListHeaders(chosenTable, nValueList, handler)
+                    || !editValues(chosenTable, nValueList, rowsToUpdate, handler)) {
+                return false;
+            }
         }
-
         if (!chosenTable.saveToFile(chosenTable.getTableFile())) {
-            queryHandler.setErrorLine("Could not update table, please try again.");
+            handler.setErrorLine("Could not update table, please try again.");
             return false;
         }
         return true;
@@ -43,27 +43,23 @@ public class Update {
         return true;
     }
 
-    public boolean editValues(Table table, List<String> nameValueList, List<Integer> rowsToUpdate, QueryHandler queryHandler) {
-        int attributeIndex = 0;
-        int valueIndex = 1;
+    public boolean editValues(Table table, List<String> nValueList, List<Integer> rowsToUpdate, QueryHandler handler) {
+        for (Integer index : rowsToUpdate) {
+            int attributeIndex = 0;
+            int valueIndex = 1;
 
-        if (!rowsToUpdate.isEmpty()) {
-            for (Integer index : rowsToUpdate) {
-                while (attributeIndex < nameValueList.size()) {
-                    if (index == -1) {
-                        queryHandler.setErrorLine("Requested column(s) in condition does not exist.");
-                        return false;
-                    }
-                    String headerName = nameValueList.get(attributeIndex);
-                    int headerIndex = table.getHeaderIndex(headerName);
-                    table.updateRowValue(index, headerIndex, nameValueList.get(valueIndex));
-                    attributeIndex += 2;
-                    valueIndex += 2;
+            while (attributeIndex < nValueList.size()) {
+                if (index == -1) {
+                    handler.setErrorLine("Requested column(s) in condition does not exist.");
+                    return false;
                 }
-                attributeIndex = 0;
-                valueIndex = 1;
+                String headerName = nValueList.get(attributeIndex);
+                table.updateRowValue(index, table.getHeaderIndex(headerName), nValueList.get(valueIndex));
+                attributeIndex += 2;
+                valueIndex += 2;
             }
         }
         return true;
     }
+
 }

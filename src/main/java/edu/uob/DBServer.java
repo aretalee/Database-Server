@@ -2,6 +2,7 @@ package edu.uob;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -20,7 +21,6 @@ public class DBServer {
     public static void main(String args[]) throws IOException {
         DBServer server = new DBServer();
         server.blockingListenOn(8888);
-
     }
 
     /**
@@ -72,8 +72,8 @@ public class DBServer {
 
     private void blockingHandleConnection(ServerSocket serverSocket) throws IOException {
         try (Socket s = serverSocket.accept();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()))) {
+             BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
+             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()))) {
 
             System.out.println("Connection established: " + serverSocket.getInetAddress());
             while (!Thread.interrupted()) {

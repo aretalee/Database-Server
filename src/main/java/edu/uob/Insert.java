@@ -19,7 +19,6 @@ public class Insert {
             queryHandler.setErrorLine("Could not insert values into table, please try again.");
             return false;
         }
-
         return true;
     }
 
@@ -31,8 +30,7 @@ public class Insert {
             queryHandler.setErrorLine("No columns in table, please insert at least one using ALTER.");
             return true;
         } else if (valueParameters.size() != chosenTable.accessColumnHeaders().size() - 1) {
-            queryHandler.setErrorLine("Must insert " + (chosenTable.accessColumnHeaders().size() - 1)
-                    + " values but you have inputted " + valueParameters.size() + " .");
+            queryHandler.setErrorLine("Please insert correct number of values.");
             return true;
         }
         return false;

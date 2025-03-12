@@ -6,7 +6,6 @@ import java.util.List;
 public class ConditionHandler {
 
     public List<Integer> filterTable(Table chosenTable, List<String> conditions, QueryHandler queryHandler) {
-
         if (conditions.isEmpty()) {
             return null;
         }
@@ -94,7 +93,7 @@ public class ConditionHandler {
         } else if (comparator.equals("==")) {
             if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                 return currentRow.get(index).equalsIgnoreCase(value);
-            }
+            } else if (value.charAt(0) == '+') { value = value.replace("+", ""); }
             return currentRow.get(index).equals(value);
         } else if (comparator.equals("!=")) {
             return !currentRow.get(index).equals(value);

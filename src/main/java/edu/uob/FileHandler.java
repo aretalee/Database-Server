@@ -14,24 +14,28 @@ public class FileHandler {
             int lineCounter = 1;
 
             while((currentLine = bufferedReader.readLine()) != null) {
-                if(lineCounter == 1) {
-                    currentTable.setCurrentID(Integer.parseInt(currentLine));
-                }
-                String[] splitLine = currentLine.split("\t");
-                if(lineCounter == 2) {
-                    for(String item : splitLine) {
-                        currentTable.addToColumnHeaders(item);
-                    }
-                } else if (lineCounter >= 3) {
-                    List<String> thisRow = new ArrayList<String>(Arrays.asList(splitLine));
-                    currentTable.addToTableList(thisRow);
-                }
+                updateTableValues(currentTable, currentLine, lineCounter);
                 lineCounter++;
             }
         } catch (NullPointerException | IOException e) {
             return false;
         }
         return true;
+    }
+
+    public void updateTableValues(Table currentTable, String currentLine, int lineCounter) {
+        if(lineCounter == 1) {
+            currentTable.setCurrentID(Integer.parseInt(currentLine));
+        }
+        String[] splitLine = currentLine.split("\t");
+        if(lineCounter == 2) {
+            for(String item : splitLine) {
+                currentTable.addToColumnHeaders(item);
+            }
+        } else if (lineCounter >= 3) {
+            List<String> thisRow = new ArrayList<String>(Arrays.asList(splitLine));
+            currentTable.addToTableList(thisRow);
+        }
     }
 
     public boolean writeTableToFile(File chosenFile, Table currentTable) {
@@ -81,15 +85,22 @@ public class FileHandler {
 
         if (databaseFolder != null) {
             for (File tableFile : databaseFolder) {
-                List<String> attributeList = new ArrayList<String>();
-                Table thisTable = new Table(tableFile, attributeList, databaseName);
-                if (!thisTable.getTableName().equals(".DS_Store")) {
-                    if (!thisTable.loadTableData()) {
-                        return false;
-                    }
-                    queryHandler.addTable(thisTable);
+                if (!addEachTable(tableFile, databaseName, queryHandler)) {
+                    return false;
                 }
             }
+        }
+        return true;
+    }
+
+    public boolean addEachTable(File tableFile, String databaseName, QueryHandler queryHandler) {
+        List<String> attributeList = new ArrayList<String>();
+        Table thisTable = new Table(tableFile, attributeList, databaseName);
+        if (!thisTable.getTableName().equals(".DS_Store")) {
+            if (!thisTable.loadTableData()) {
+                return false;
+            }
+            queryHandler.addTable(thisTable);
         }
         return true;
     }

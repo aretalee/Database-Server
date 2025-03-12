@@ -25,17 +25,8 @@ public class Create {
     public boolean createTable(String filePath, String fileName, List<String> attriList, QueryHandler queryHandler) {
 
         newFile = new File(filePath + File.separator + fileName.toLowerCase() + ".tab");
-        try {
-            if (checkHeadersForDupes(attriList, queryHandler)) {
-                return false;
-            } else if (!newFile.createNewFile()) {
-                queryHandler.setErrorLine("The given table already exists.");
-                return false;
-            }
-        } catch (IOException e) {
-            queryHandler.setErrorLine("Please try again.");
-            return false;
-        }
+        if (!makeTableFile(attriList, queryHandler)) { return false; }
+
         Table newTable = new Table(newFile, attriList, queryHandler.getCurrentDatabase());
         queryHandler.addTable(newTable);
 
@@ -47,6 +38,21 @@ public class Create {
         return true;
     }
 
+    public boolean makeTableFile(List<String> attriList, QueryHandler queryHandler) {
+        try {
+            if (checkHeadersForDupes(attriList, queryHandler)) {
+                return false;
+            } else if (!newFile.createNewFile()) {
+                queryHandler.setErrorLine("The given table already exists.");
+                return false;
+            }
+        } catch (IOException e) {
+            queryHandler.setErrorLine("Please try again.");
+            return false;
+        }
+        return true;
+    }
+
     public boolean checkHeadersForDupes(List<String> headers, QueryHandler queryHandler) {
         if (headers.isEmpty()) {
             return false;
@@ -54,15 +60,19 @@ public class Create {
         List<String> lowercaseHeaders = makeHeadersLowerCase(headers);
         for (String header : lowercaseHeaders) {
             if (Collections.frequency(lowercaseHeaders, header) > 1) {
-                if (header.equalsIgnoreCase("id")) {
-                    queryHandler.setErrorLine("Cannot set id as header in table.");
-                } else {
-                    queryHandler.setErrorLine("One or more column headers have been duplicated.");
-                }
+                setDupeError(header, queryHandler);
                 return true;
             }
         }
         return false;
+    }
+
+    public void setDupeError(String header, QueryHandler queryHandler) {
+        if (header.equalsIgnoreCase("id")) {
+            queryHandler.setErrorLine("Cannot set id as header in table.");
+        } else {
+            queryHandler.setErrorLine("One or more column headers have been duplicated.");
+        }
     }
 
     public List<String>  makeHeadersLowerCase(List<String> headers) {
