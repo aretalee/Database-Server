@@ -81,8 +81,7 @@ public class ConditionHandler {
             currentList.add(-1);
             return currentList;
         }
-        int headerIndex = handler.findColumnIndex(table, attri);
-        getResults(table, headerIndex, currentList, comp, value);
+        getResults(table, handler.findColumnIndex(table, attri), currentList, comp, value);
         return currentList;
     }
 
@@ -119,15 +118,12 @@ public class ConditionHandler {
 
     public boolean compareInts(List<String> currentRow, int index, String comparator, String value) {
         boolean match = false;
-        int compOne;
-        int compTwo;
+        int compOne, compTwo;
         try {
             compOne = Integer.parseInt(currentRow.get(index));
             compTwo = Integer.parseInt(value);
+        } catch (NumberFormatException e) { return false; }
 
-        } catch (NumberFormatException e) {
-            return false;
-        }
         if (comparator.equals(">")) { match = (compOne > compTwo); }
         if (comparator.equals("<")) { match = (compOne < compTwo); }
         if (comparator.equals(">=")) { match = (compOne >= compTwo); }
