@@ -34,9 +34,6 @@ public class Join {
         if (tableOne == null || tableTwo == null) {
             handler.setErrorLine("One or more requested tables do not exist.");
             return true;
-        } else if (tableOne.getTableName().equals(tableTwo.getTableName())) {
-            handler.setErrorLine("Cannot join the same table.");
-            return true;
         } else if (!tableOne.hasRequestedHeader(attriOne) || !tableTwo.hasRequestedHeader(attriTwo)) {
             handler.setErrorLine("One or more attributes do not belong to the corresponding tables.");
             return true;

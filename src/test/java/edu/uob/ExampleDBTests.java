@@ -175,7 +175,7 @@ public class ExampleDBTests {
         sendCommandToServer("CREATE TABLE marks (name, mark, pass);");
         sendCommandToServer("INSERT INTO marks VALUES ('Simon', 65, TRUE);");
         sendCommandToServer("INSERT INTO marks VALUES ('Sion', 55, TRUE);");
-        sendCommandToServer("ALTER TABLE marks DROP name;");
+        sendCommandToServer(" ALTER   TABLE     marks                                         DROP name;");
         String response = sendCommandToServer("SELECT * FROM marks;");
         assertTrue(response.contains("[OK]"), "A valid query was made, however an [OK] tag was not returned");
         assertFalse(response.contains("[ERROR]"), "A valid query was made, however an [ERROR] tag was returned");
@@ -191,7 +191,7 @@ public class ExampleDBTests {
         sendCommandToServer("CREATE TABLE marks (name, mark, pass);");
         sendCommandToServer("INSERT INTO marks VALUES ('Simon', 65, TRUE);");
         sendCommandToServer("INSERT INTO marks VALUES ('Sion', 55, TRUE);");
-        sendCommandToServer("DELETE FROM marks WHERE mark<60;");
+        sendCommandToServer("delete from    marks    where  mark<60;");
         String response = sendCommandToServer("SELECT * FROM marks;");
         assertTrue(response.contains("[OK]"), "A valid query was made, however an [OK] tag was not returned");
         assertFalse(response.contains("[ERROR]"), "A valid query was made, however an [ERROR] tag was returned");
@@ -207,7 +207,7 @@ public class ExampleDBTests {
         sendCommandToServer("CREATE TABLE marks (name, mark, pass);");
         sendCommandToServer("INSERT INTO marks VALUES ('Simon', 65, TRUE);");
         sendCommandToServer("INSERT INTO marks VALUES ('Sion', 55, TRUE);");
-        sendCommandToServer("DROP TABLE marks;");
+        sendCommandToServer("DrOp    taBLE     marks;");
         String response = sendCommandToServer("SELECT * FROM marks;");
         assertFalse(response.contains("[OK]"), "An invalid query was made, however an [OK] tag was returned");
         assertTrue(response.contains("[ERROR]"), "An invalid query was made, however an [ERROR] tag was not returned");
@@ -2344,7 +2344,7 @@ public class ExampleDBTests {
     }
 
     @Test
-    public void invalidActions32() {
+    public void actuallyValidAction() {
         String randomName = generateRandomName();
         sendCommandToServer("CREATE DATABASE " + randomName + ";");
         sendCommandToServer("USE " + randomName + ";");
@@ -2355,9 +2355,9 @@ public class ExampleDBTests {
         sendCommandToServer("INSERT INTO marks VALUES ('OXO', 20);");
         sendCommandToServer("INSERT INTO marks VALUES ('DB', 80);");
         String response = sendCommandToServer("JOIN marks AND marks ON mark AND pass;");
-        // can't JOIN the same table
-        assertTrue(response.contains("[ERROR]"), "An [ERROR] tag was not returned");
-        assertFalse(response.contains("[OK]"), "An [OK] tag was returned");
+        // can JOIN the same table
+        assertFalse(response.contains("[ERROR]"), "An [ERROR] tag was returned");
+        assertTrue(response.contains("[OK]"), "An [OK] tag was not returned");
     }
 
     @Test
@@ -3074,15 +3074,103 @@ public class ExampleDBTests {
         assertFalse(response.contains("that"), "Was returned by SELECT *");
     }
 
-
     // compound queries
+
+    @Test
+    public void testCompoundQuery() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (name, mark, pass);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Simon', 45, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Sion', 55, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Rob', 40, FALSE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Billy', 35, FALSE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Betty', 80, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Steph', 67, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Tina', 87, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Ben', 80, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Faye', 92, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Joel', 88, TRUE);");
+        String response = sendCommandToServer("select * from marks where (mark > 50 and name like 'B') or ((name == 'Simon' or name == 'Rob' )and pass == TRUE);");
+        assertTrue(response.contains("[OK]"), "A valid query was made, however an [OK] tag was not returned");
+        assertFalse(response.contains("[ERROR]"), "A valid query was made, however an [ERROR] tag was returned");
+        assertTrue(response.contains("Simon"), "There should be a name called Simon in the table");
+        assertTrue(response.contains("Betty"), "There should should be a name called Betty in the table");
+        assertTrue(response.contains("Ben"), "There should be a name called Ben in the table");
+    }
+
+    @Test
+    public void testCompoundQuery2() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (name, mark, pass);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Simon', 45, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Sion', 55, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Rob', 40, FALSE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Billy', 35, FALSE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Betty', 80, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Steph', 67, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Tina', 87, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Ben', 80, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Faye', 92, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Joel', 88, TRUE);");
+        String response = sendCommandToServer("select * from marks where (pass == false or (id > 5 and name like 'B' or name == 'Faye')) and mark > 87;");
+        assertTrue(response.contains("[OK]"), "A valid query was made, however an [OK] tag was not returned");
+        assertFalse(response.contains("[ERROR]"), "A valid query was made, however an [ERROR] tag was returned");
+        assertTrue(response.contains("Faye"), "There should be a name called Faye in the table");
+    }
+
+    @Test
+    public void testCompoundQuery3() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE marks (name, mark, pass);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Simon', 45, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Sion', 55, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Rob', 40, FALSE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Billy', 35, FALSE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Betty', 80, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Steph', 67, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Tina', 87, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Ben', 80, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Faye', 92, TRUE);");
+        sendCommandToServer("INSERT INTO marks VALUES ('Joel', 88, TRUE);");
+        String response = sendCommandToServer("select * from marks where pass == false or ((pass == true and (name like 'B'or name == 'Faye')) and ((name like 'i' and mark > 50) or mark < 40));");
+        assertTrue(response.contains("[OK]"), "A valid query was made, however an [OK] tag was not returned");
+        assertFalse(response.contains("[ERROR]"), "A valid query was made, however an [ERROR] tag was returned");
+        assertTrue(response.contains("Rob"), "There should be a name called Rob in the table");
+        assertTrue(response.contains("Billy"), "There should be a name called Billy in the table");
+    }
 
     // more complicated joins (many to many)
 
-    // maybe double check list parsing again (Value, Attribute, Wild Attribute, Name Value)?
+    @Test
+    public void testComplexJoin() {
+        String randomName = generateRandomName();
+        sendCommandToServer("CREATE DATABASE " + randomName + ";");
+        sendCommandToServer("USE " + randomName + ";");
+        sendCommandToServer("CREATE TABLE cause (number, name);");
+        sendCommandToServer("INSERT INTO cause VALUES (1.10, 'Dan');");
+        sendCommandToServer("INSERT INTO cause VALUES (1.12, 'Ben');");
+        sendCommandToServer("INSERT INTO cause VALUES (1.10, 'James');");
+        sendCommandToServer("CREATE TABLE result (title, mark);");
+        sendCommandToServer("INSERT INTO result VALUES ('Fantasy', 1.12);");
+        sendCommandToServer("INSERT INTO result VALUES ('Mystery', 1.10);");
+        sendCommandToServer("INSERT INTO result VALUES ('Horror', 1.12);");
+        String response = sendCommandToServer("    JOIN     result AND    cause  ON mark     AND   number       ;");
+        assertTrue(response.contains("[OK]"), "A valid query was made, however an [OK] tag was not returned");
+        assertFalse(response.contains("[ERROR]"), "A valid query was made, however an [ERROR] tag was returned");
+        assertTrue(response.contains("result.title"), "There should be this header in the table");
+        assertTrue(response.contains("cause.name"), "There should should be this header in the table");
+        assertTrue(response.contains("Dan"), "There should be a name called Dan in the table");
+        assertTrue(response.contains("James"), "There should be a name called James in the table");
+        assertTrue(response.contains("Fantasy"), "There should be a title called Fantasy in the table");
+        assertTrue(response.contains("Horror"), "There should be a title called Horror in the table");
+    }
 
-
-    // test even more or all methods for whitespace and case (now only testing some)
 
 
 }
