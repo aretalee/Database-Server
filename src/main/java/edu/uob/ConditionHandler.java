@@ -122,14 +122,6 @@ public class ConditionHandler {
         try {
             valueOne = Float.parseFloat(currentRow.get(index));
             valueTwo = Float.parseFloat(value);
-//            if (isNumberFloat(currentRow.get(index))) {
-//                valueOne = Float.parseFloat(currentRow.get(index));
-//            } else { valueOne = Integer.parseInt(currentRow.get(index)); }
-//
-//            if (isNumberFloat(value)) {
-//                valueTwo = Float.parseFloat(value);
-//            } else { valueTwo = Integer.parseInt(value); }
-
         } catch (NumberFormatException e) { return false; }
 
         if (comparator.equals(">")) { match = (valueOne > valueTwo); }

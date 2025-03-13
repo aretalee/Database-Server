@@ -4,7 +4,6 @@ import java.util.List;
 
 public class Insert {
 
-
     public boolean insertIntoTable(QueryHandler handler, Table chosenTable, List<String> valueParameters) {
 
         if (areThereInsertErrors(handler, chosenTable, valueParameters)) {
