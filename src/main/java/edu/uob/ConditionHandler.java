@@ -118,18 +118,35 @@ public class ConditionHandler {
 
     public boolean compareInts(List<String> currentRow, int index, String comparator, String value) {
         boolean match = false;
-        int compOne, compTwo;
+        float valueOne, valueTwo;
         try {
-            compOne = Integer.parseInt(currentRow.get(index));
-            compTwo = Integer.parseInt(value);
+            valueOne = Float.parseFloat(currentRow.get(index));
+            valueTwo = Float.parseFloat(value);
+//            if (isNumberFloat(currentRow.get(index))) {
+//                valueOne = Float.parseFloat(currentRow.get(index));
+//            } else { valueOne = Integer.parseInt(currentRow.get(index)); }
+//
+//            if (isNumberFloat(value)) {
+//                valueTwo = Float.parseFloat(value);
+//            } else { valueTwo = Integer.parseInt(value); }
+
         } catch (NumberFormatException e) { return false; }
 
-        if (comparator.equals(">")) { match = (compOne > compTwo); }
-        if (comparator.equals("<")) { match = (compOne < compTwo); }
-        if (comparator.equals(">=")) { match = (compOne >= compTwo); }
-        if (comparator.equals("<=")) { match = (compOne <= compTwo); }
+        if (comparator.equals(">")) { match = (valueOne > valueTwo); }
+        if (comparator.equals("<")) { match = (valueOne < valueTwo); }
+        if (comparator.equals(">=")) { match = (valueOne >= valueTwo); }
+        if (comparator.equals("<=")) { match = (valueOne <= valueTwo); }
 
         return match;
+    }
+
+    public boolean isNumberFloat(String value) {
+        for (Character c : value.toCharArray()) {
+            if (c.equals('.')) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

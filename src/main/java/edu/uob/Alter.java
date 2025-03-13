@@ -4,6 +4,10 @@ public class Alter {
 
     public boolean alterTable(Table chosenTable, String valueType, String chosenHeader, QueryHandler handler) {
 
+        if (chosenTable == null) {
+            handler.setErrorLine("Requested table does not exist.");
+            return false;
+        }
         if(valueType.equalsIgnoreCase("add")) {
             if (!addColumnHeader(chosenTable, chosenHeader, handler)) {
                 return false;
@@ -21,11 +25,7 @@ public class Alter {
     }
 
     public boolean addColumnHeader(Table table, String header, QueryHandler handler) {
-
-        if (table == null) {
-            handler.setErrorLine("Requested table does not exist.");
-            return false;
-        } else if (table.hasRequestedHeader(header)) {
+        if (table.hasRequestedHeader(header)) {
             handler.setErrorLine("Column already exists.");
             return false;
         }

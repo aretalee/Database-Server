@@ -47,7 +47,7 @@ public class Create {
                 return false;
             }
         } catch (IOException e) {
-            handler.setErrorLine("Please try again.");
+            handler.setErrorLine("Please try again. Make sure you are in a valid database");
             return false;
         }
         return true;

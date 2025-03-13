@@ -77,7 +77,7 @@ public class Select {
         if (printAllRows) {
             addAllRows(formattedRows, tableList);
             printAllRows = false;
-        } else if (chosenRows.isEmpty()) { return null; }
+        } else if (chosenRows.isEmpty()) { return formattedRows; }
         else { addSelectedRows(formattedRows, tableList, chosenRows); }
 
         return formattedRows;

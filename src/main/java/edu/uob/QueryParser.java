@@ -9,7 +9,7 @@ import java.util.Stack;
 public class QueryParser {
 
     String[] reservedWords = {"use", "create", "drop", "alter", "insert", "select", "update", "delete", "join"
-                              , "database", "table", "into", "values", "from", "where", "set", "and", "or"
+                              , "database", "table", "into", "values", "from", "where", "set", "and", "on", "or"
                               , "add", "true", "false", "null"};
 
     public boolean parseQuery(List<String> query, QueryHandler handler) {
