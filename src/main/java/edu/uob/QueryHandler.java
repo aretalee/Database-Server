@@ -76,7 +76,6 @@ public class QueryHandler {
     }
 
     public void removeTable(String tableName, String databaseName) {
-        // should I make it null first?
         allTables.removeIf(table -> table.getWhichDatabase().equalsIgnoreCase(databaseName)
                 && table.getTableName().equals(tableName));
     }

@@ -3,7 +3,6 @@ package edu.uob;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-// need to modify this to take any query & parse correctly
 
 public class QueryLexer{
 
