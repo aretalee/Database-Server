@@ -46,32 +46,19 @@ public class FileHandler {
             bufferedWriter.newLine();
 
             List<String> columnHeaders = currentTable.accessColumnHeaders();
-            if (!columnHeaders.isEmpty()) {
-                for (String header : columnHeaders) {
-                    bufferedWriter.write(header);
-                    bufferedWriter.write("\t");
-                }
-                bufferedWriter.newLine();
+            for (String header : columnHeaders) {
+                bufferedWriter.write(header);
+                bufferedWriter.write("\t");
             }
+            bufferedWriter.newLine();
 
             List<List<String>> tableContent = currentTable.accessTable();
-            if (!isTableEmpty(tableContent)) {
-                for (List<String> row : tableContent) {
-                    bufferedWriter.write(String.join("\t", row));
-                    bufferedWriter.newLine();
-                }
+            for (List<String> row : tableContent) {
+                bufferedWriter.write(String.join("\t", row));
+                bufferedWriter.newLine();
             }
         } catch (NullPointerException | IOException e) {
             return false;
-        }
-        return true;
-    }
-
-    public boolean isTableEmpty(List<List<String>> tableContent) {
-        for (List<String> row : tableContent) {
-            if (!row.isEmpty()) {
-                return false;
-            }
         }
         return true;
     }
