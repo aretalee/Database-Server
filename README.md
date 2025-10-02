@@ -1,1 +1,1 @@
-# java-assignment-1
+# A database server coded in Java
